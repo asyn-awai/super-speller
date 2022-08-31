@@ -47,7 +47,7 @@ const Navbar: React.FC<Props> = ({ links }): JSX.Element => {
 				</div>
 				<div className="flex items-center justify-center">
 					<button
-						className="w-24 h-10 transition-colors bg-blue-500 sm:w-32 rounded-2xl hover:bg-blue-700"
+						className="w-24 h-10 transition-colors bg-blue-500 sm:w-32 rounded-2xl hover:bg-blue-600"
 						onClick={() => navigate("/signin")}
 					>
 						<div className="flex items-center justify-center">

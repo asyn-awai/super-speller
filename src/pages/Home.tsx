@@ -5,22 +5,24 @@ import { FaThList, FaGraduationCap, FaShare } from "react-icons/fa";
 import PCImage from "../assets/pc-image.png";
 import CodingImage from "../assets/coding.png";
 import CodingImage1 from "../assets/coding-1.png";
+import Layout from "../components/Layout";
 
 const Home: React.FC = (): JSX.Element => {
 	return (
 		<>
-			<Navbar
-				links={[
+			<Layout
+				navbarProps={[
 					{ name: "Home", url: "/" },
 					{ name: "About", url: "/about" },
 					{ name: "Contact", url: "/contact" },
 				]}
-			/>
-			<Landing />
-			<GetStarted />
+			>
+				<Landing />
+				<GetStarted />
+			</Layout>
 		</>
 	);
-}
+};
 
 export default Home;
 
@@ -46,7 +48,7 @@ const Landing: React.FC = (): JSX.Element => {
 				</div>
 				<div className="flex items-center justify-center w-[80%] md:w-[40%] h-full mb-10 md:mb-0">
 					{/* <img src="https://t4.ftcdn.net/jpg/04/36/24/89/360_F_436248995_Uhq8fBPXYgUNa4ewT8BhPaZi19irvJsF.jpg" /> */}
-                    <img src={CodingImage} />
+					<img src={CodingImage} />
 				</div>
 			</div>
 		</section>
