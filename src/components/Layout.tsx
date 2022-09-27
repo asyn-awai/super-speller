@@ -9,17 +9,19 @@ interface NavbarItem {
 interface Props {
 	children: React.ReactNode;
 	navbarProps: NavbarItem[];
-	noNav?: boolean;
+	topNav?: boolean;
+	sideNav?: boolean;
 }
 
 const Layout: React.FC<Props> = ({
 	children,
 	navbarProps,
-	noNav,
+	topNav = false,
+    sideNav = false,
 }): JSX.Element => {
 	return (
 		<div>
-			{!noNav && <Navbar links={navbarProps} />}
+			{topNav && <Navbar links={navbarProps} />}
 			{children}
 		</div>
 	);

@@ -16,6 +16,7 @@ const Home: React.FC = (): JSX.Element => {
 					{ name: "About", url: "/about" },
 					{ name: "Contact", url: "/contact" },
 				]}
+                topNav
 			>
 				<Landing />
 				<GetStarted />

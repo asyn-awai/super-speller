@@ -5,20 +5,20 @@ import Navbar from "../components/Navbar";
 import Requirements from "../components/SignIn/Requirements";
 import Fields from "../components/SignIn/Fields";
 import db from "../firebase";
+import Layout from "../components/Layout";
 
 const SignIn: React.FC = (): JSX.Element => {
 	const navigate = useNavigate();
-    
+
 	const [isUser, setIsUser] = useState(false);
-    const [validInput, setValidInput] = useState(false);
+	const [validInput, setValidInput] = useState(false);
 	const [username, setUsername] = useState("");
 	const [email, setEmail] = useState("");
 	const [password, setPassword] = useState("");
 	const [confirmPassword, setConfirmPassword] = useState("");
 
 	return (
-		<>
-			<Navbar links={[{ name: "Home", url: "/" }]} />
+		<Layout navbarProps={[{ name: "Home", url: "/" }]} topNav>
 			<div className="min-h-[90vh] flex justify-center items-center h-full w-full">
 				<div className="items-center justify-center h-auto p-6 bg-white rounded-lg shadow-2xl min-h-96 w-[80%] xl:w-[40rem]">
 					<h1 className="text-2xl font-bold text-center">
@@ -30,46 +30,54 @@ const SignIn: React.FC = (): JSX.Element => {
 							isUser={isUser}
 							email={email}
 							password={password}
-							confirmPassword={confirmPassword} 
+							confirmPassword={confirmPassword}
 							setUsername={setUsername}
 							setEmail={setEmail}
 							setPassword={setPassword}
 							setConfirmPassword={setConfirmPassword}
 						/>
 					</form>
-					<Requirements 
-                        isUser={isUser}
-                        username={username}
-                        email={email}
-                        password={password}
-                        confirmPassword={confirmPassword}
-                        setValidInput={setValidInput}
-                    />
+					<Requirements
+						isUser={isUser}
+						username={username}
+						email={email}
+						password={password}
+						confirmPassword={confirmPassword}
+						setValidInput={setValidInput}
+					/>
 					<div className="flex flex-col items-center justify-center">
 						<div className="flex items-center justify-center w-full pb-5 border-b-2 border-gray-200">
 							<button
 								className="w-32 p-2 mt-4 text-white transition-colors bg-blue-500 rounded-lg hover:bg-blue-700"
 								onClick={async e => {
-                                    e.preventDefault();
-                                    try {
-                                        if (!validInput) throw new Error("Invalid input");
-                                        const sameEmail = await getDocs(
-                                            query(collection(db, "user-data"), 
-                                                  where("email", "==", email))
-                                        );
-                                        if (sameEmail.size > 0) {
-                                            throw new Error("Email already in use");
-                                        }
-                                        await addDoc(collection(db, "user-data"), {
-                                            username,
-                                            email,
-                                            password,
-                                        });
-                                        navigate('/dashboard');
-                                    } catch (error) {
-                                        alert(error);
-                                    }
-                                }}
+									e.preventDefault();
+									try {
+										if (!validInput)
+											throw new Error("Invalid input");
+										const sameEmail = await getDocs(
+											query(
+												collection(db, "user-data"),
+												where("email", "==", email)
+											)
+										);
+										if (sameEmail.size > 0) {
+											throw new Error(
+												"Email already in use"
+											);
+										}
+										await addDoc(
+											collection(db, "user-data"),
+											{
+												username,
+												email,
+												password,
+											}
+										);
+										navigate("/dashboard");
+									} catch (error) {
+										alert(error);
+									}
+								}}
 							>
 								{isUser ? "Sign In" : "Sign Up"}
 							</button>
@@ -94,7 +102,7 @@ const SignIn: React.FC = (): JSX.Element => {
 					</div>
 				</div>
 			</div>
-		</>
+		</Layout>
 	);
 };
 
@@ -106,15 +114,14 @@ async function validateLogin(
 	email: string,
 	password: string,
 	// confirmPassword: string,
-    validInput: boolean,
-    navigate: (path: string) => void
+	validInput: boolean,
+	navigate: (path: string) => void
 ) {
 	e.preventDefault();
 	try {
 		if (!validInput) throw new Error("Invalid input");
 		const sameEmail = await getDocs(
-			query(collection(db, "user-data"), 
-                  where("email", "==", email))
+			query(collection(db, "user-data"), where("email", "==", email))
 		);
 		if (sameEmail.size > 0) {
 			throw new Error("Email already in use");
@@ -125,7 +132,7 @@ async function validateLogin(
 			password,
 		});
 		alert("success");
-        navigate('/dashboard');
+		navigate("/dashboard");
 	} catch (error) {
 		alert(error);
 	}
