@@ -1,15 +1,21 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import { FaSignInAlt } from "react-icons/fa";
+import { FaMoon, FaSignInAlt, FaSun } from "react-icons/fa";
 
 interface Props {
 	links: {
 		name: string;
 		url: string;
 	}[];
+	darkMode: boolean;
+	setDarkMode: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
-const Navbar: React.FC<Props> = ({ links }): JSX.Element => {
+const Navbar: React.FC<Props> = ({
+	links,
+	darkMode,
+	setDarkMode,
+}): JSX.Element => {
 	const navigate = useNavigate();
 	return (
 		<nav className="flex items-center justify-around px-3 mt-1 md:justify-between h-14 sm:px-10">
@@ -47,7 +53,7 @@ const Navbar: React.FC<Props> = ({ links }): JSX.Element => {
 				</div>
 				<div className="flex items-center justify-center">
 					<button
-						className="w-24 h-10 transition-colors bg-blue-500 sm:w-32 rounded-2xl hover:bg-blue-600"
+						className="w-24 h-10 mr-10 transition-colors bg-blue-500 sm:w-32 rounded-2xl hover:bg-blue-600"
 						onClick={() => navigate("/signin")}
 					>
 						<div className="flex items-center justify-center">
@@ -59,6 +65,12 @@ const Navbar: React.FC<Props> = ({ links }): JSX.Element => {
 								Sign in
 							</p>
 						</div>
+					</button>
+					<button
+						className="flex items-center justify-center w-10 h-10 font-bold text-white bg-blue-500 border-none rounded-full outline-none hover:bg-blue-600"
+						onClick={() => setDarkMode(prev => !prev)}
+					>
+						{darkMode ? <FaMoon size={20} /> : <FaSun size={20} />}
 					</button>
 				</div>
 			</div>

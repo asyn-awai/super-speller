@@ -1,13 +1,18 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { addDoc, collection, getDocs, query, where } from "firebase/firestore";
-import Navbar from "../components/Navbar";
+import Navbar from "../components/TopNav";
 import Requirements from "../components/SignIn/Requirements";
 import Fields from "../components/SignIn/Fields";
 import db from "../firebase";
 import Layout from "../components/Layout";
 
-const SignIn: React.FC = (): JSX.Element => {
+interface Props {
+	darkMode: boolean;
+	setDarkMode: React.Dispatch<React.SetStateAction<boolean>>;
+}
+
+const SignIn: React.FC<Props> = ({ darkMode, setDarkMode }): JSX.Element => {
 	const navigate = useNavigate();
 
 	const [isUser, setIsUser] = useState(false);
@@ -18,7 +23,12 @@ const SignIn: React.FC = (): JSX.Element => {
 	const [confirmPassword, setConfirmPassword] = useState("");
 
 	return (
-		<Layout navbarProps={[{ name: "Home", url: "/" }]} topNav>
+		<Layout
+			navbarProps={[{ name: "Home", url: "/" }]}
+			darkMode={darkMode}
+			setDarkMode={setDarkMode}
+			topNav
+		>
 			<div className="min-h-[90vh] flex justify-center items-center h-full w-full">
 				<div className="items-center justify-center h-auto p-6 bg-white rounded-lg shadow-2xl min-h-96 w-[80%] xl:w-[40rem]">
 					<h1 className="text-2xl font-bold text-center">

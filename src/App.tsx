@@ -25,13 +25,52 @@ function App() {
 	// 	getUsers();
 	// }, []);
 
+	const [darkMode, setDarkMode] = useState(
+		localStorage.getItem("darkMode") === "true"
+	);
+
+	useEffect(() => {
+		//set the dark mode class on the root element and update the local storage
+		const root = document.documentElement as HTMLElement;
+		if (darkMode) {
+			root.classList.add("dark");
+		} else {
+			root.classList.remove("dark");
+		}
+		localStorage.setItem("darkMode", darkMode.toString());
+	}, [darkMode]);
+
 	return (
 		<>
 			<Router>
 				<Routes>
-					<Route path="/" element={<Home />} />
-					<Route path="/signin" element={<SignIn />} />
-					<Route path="/dashboard" element={<Dashboard />} />
+					<Route
+						path="/"
+						element={
+							<Home
+								darkMode={darkMode}
+								setDarkMode={setDarkMode}
+							/>
+						}
+					/>
+					<Route
+						path="/signin"
+						element={
+							<SignIn
+								darkMode={darkMode}
+								setDarkMode={setDarkMode}
+							/>
+						}
+					/>
+					<Route
+						path="/dashboard"
+						element={
+							<Dashboard
+								darkMode={darkMode}
+								setDarkMode={setDarkMode}
+							/>
+						}
+					/>
 					<Route path="*" element={<NotFound />} />
 				</Routes>
 			</Router>

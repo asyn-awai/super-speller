@@ -1,5 +1,5 @@
 import React from "react";
-import Navbar from "../components/Navbar";
+import Navbar from "../components/TopNav";
 
 import { FaThList, FaGraduationCap, FaShare } from "react-icons/fa";
 import PCImage from "../assets/pc-image.png";
@@ -7,7 +7,12 @@ import CodingImage from "../assets/coding.png";
 import CodingImage1 from "../assets/coding-1.png";
 import Layout from "../components/Layout";
 
-const Home: React.FC = (): JSX.Element => {
+interface Props {
+	darkMode: boolean;
+	setDarkMode: React.Dispatch<React.SetStateAction<boolean>>;
+}
+
+const Home: React.FC<Props> = ({ darkMode, setDarkMode }): JSX.Element => {
 	return (
 		<>
 			<Layout
@@ -16,7 +21,9 @@ const Home: React.FC = (): JSX.Element => {
 					{ name: "About", url: "/about" },
 					{ name: "Contact", url: "/contact" },
 				]}
-                topNav
+				darkMode={darkMode}
+				setDarkMode={setDarkMode}
+				topNav
 			>
 				<Landing />
 				<GetStarted />
@@ -36,7 +43,7 @@ const Landing: React.FC = (): JSX.Element => {
 						<span className="text-5xl font-bold text-blue-500">
 							Expand
 						</span>{" "}
-						Your Vocabulary.
+						Your Vocabulary
 					</p>
 					<br />
 					<p className="text-xl font-bold text-center xl:text-left">

@@ -23,23 +23,30 @@ input:focus {
 
 /*customize the scrollbar to have a blue scroller*/
 ::-webkit-scrollbar {
-    width: 15px;
+	width: 15px;
 }
 ::-webkit-scrollbar-track {
-    background: #f1f1f1;
+	background: #f1f1f1;
 }
 ::-webkit-scrollbar-thumb {
-    border: 3px solid #f1f1f1;
-    background: #3b82f6;
-    border-radius: 10px;
-    width: 5px !important;
+	border: 3px solid #f1f1f1;
+	background: #3b82f6;
+	border-radius: 10px;
+	width: 5px !important;
 }
 ::-webkit-scrollbar-thumb:hover {
-    background: #2563EB;
+	background: #2563eb;
 }
 
-.flipX {
-    transform: rotateX(180deg);
+/* apply dark mode consider both text and background */
+.d {
+	@apply dark:text-white text-gray-600 transition-colors duration-200 ease-in-out;
+}
+
+html.d,
+body.d,
+div.d {
+	@apply dark:bg-gray-900 bg-white;
 }
 
 body {
