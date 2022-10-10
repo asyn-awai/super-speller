@@ -1,5 +1,5 @@
 import React from "react";
-import Navbar from "./TopNav";
+import TopNav from "./TopNav";
 import SideNav from "./SideNav";
 
 interface NavbarItem {
@@ -34,7 +34,7 @@ const Layout: React.FC<Props> = ({
 				</div>
 			)}
 			{topNav && (
-				<Navbar
+				<TopNav
 					links={navbarProps}
 					darkMode={darkMode}
 					setDarkMode={setDarkMode}
@@ -46,7 +46,11 @@ const Layout: React.FC<Props> = ({
 			{footer && (
 				<>
 					<br />
-					<footer className="pl-32 transition-colors bg-gray-100 border border-none h-36 dark:bg-gray-700">
+					<footer
+						className={`${
+							sideNav && "pl-32"
+						} transition-colors bg-gray-100 border border-none h-36 dark:bg-gray-700`}
+					>
 						Footer
 					</footer>
 				</>

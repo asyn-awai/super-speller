@@ -24,6 +24,7 @@ const Home: React.FC<Props> = ({ darkMode, setDarkMode }): JSX.Element => {
 				darkMode={darkMode}
 				setDarkMode={setDarkMode}
 				topNav
+                footer
 			>
 				<Landing />
 				<GetStarted />
@@ -40,13 +41,13 @@ const Landing: React.FC = (): JSX.Element => {
 			<div className="min-h-[95vh] h-auto flex p-5 md:p-14 xl:px-28 flex-col items-center justify-between xl:flex-row">
 				<div className="min-h-[90%] h-auto flex flex-col justify-center xl:max-w-[36rem] mb-10">
 					<p className="text-5xl font-bold text-center xl:text-left">
-						<span className="text-5xl font-bold text-blue-500">
+						<span className="text-5xl font-bold text-blue-500 transition-colors">
 							Expand
 						</span>{" "}
 						Your Vocabulary
 					</p>
 					<br />
-					<p className="text-xl font-bold text-center xl:text-left">
+					<p className="text-xl font-bold text-center xl:text-left d">
 						Lorem ipsum dolor sit amet consectetur adipisicing elit.
 						Fuga itaque explicabo corporis, perspiciatis quae
 						exercitationem nostrum sit ullam voluptates natus optio
@@ -70,15 +71,15 @@ const GetStarted: React.FC = (): JSX.Element => {
 		text: string;
 	}> = ({ header, image, text }): JSX.Element => {
 		return (
-			<div className="flex flex-col items-center w-64 p-5 mb-8 bg-white shadow-xl h-72 rounded-xl lg:mb-1">
+			<div className="flex flex-col items-center w-64 p-5 mb-8 bg-gray-100 shadow-xl h-72 rounded-xl lg:mb-1 dark:bg-gray-700">
 				<div className="h-auto min-h-3">
-					<strong className="text-xl">{header}</strong>
+					<strong className="text-xl d">{header}</strong>
 				</div>
 				<br />
 				<div className="h-auto min-h-10">{image}</div>
 				<br />
 				<div className="h-auto text-center min-h-5">
-					<p className="font-medium">{text}</p>
+					<p className="font-medium d">{text}</p>
 				</div>
 			</div>
 		);
@@ -86,7 +87,7 @@ const GetStarted: React.FC = (): JSX.Element => {
 
 	return (
 		<section>
-			<h1 className="text-3xl font-bold text-center">What can you do?</h1>
+			<h1 className="text-3xl font-bold text-center d">What can you do?</h1>
 			<div className="min-h-[75vh] h-auto py-1 p-5 px-10 md:px-24 md:p-14 flex flex-col lg:flex-row items-center justify-between md:justify-around">
 				<Card
 					header="Create a list"

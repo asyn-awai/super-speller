@@ -11,14 +11,14 @@ interface Props {
 	setDarkMode: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
-const Navbar: React.FC<Props> = ({
+const TopNav: React.FC<Props> = ({
 	links,
 	darkMode,
 	setDarkMode,
 }): JSX.Element => {
 	const navigate = useNavigate();
 	return (
-		<nav className="flex items-center justify-around px-3 mt-1 md:justify-between h-14 sm:px-10">
+		<nav className="flex items-center justify-around px-3 pt-3 md:justify-between h-14 sm:px-10">
 			<div className="flex items-center h-20 py-6 cursor-pointer">
 				{/* <img
 					src="https://www.gstatic.com/images/branding/product/1x/keep_48dp.png"
@@ -42,11 +42,11 @@ const Navbar: React.FC<Props> = ({
 							>
 								<p
 									key={index}
-									className="px-10 text-xl font-bold transition-colors border-none"
+									className="px-10 text-xl font-bold border-none d"
 								>
 									{navItem.name}
 								</p>
-								<div className="w-full h-1 transition-all scale-0 bg-blue-400 group-hover:scale-100"></div>
+								<div className="w-full h-1 transition-all scale-0 bg-blue-400 group-hover:scale-100" />
 							</div>
 						);
 					})}
@@ -78,4 +78,4 @@ const Navbar: React.FC<Props> = ({
 	);
 };
 
-export default Navbar;
+export default TopNav;
