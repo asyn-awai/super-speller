@@ -1,5 +1,6 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
+import { nanoid } from "nanoid";
 import { FaMoon, FaSignInAlt, FaSun } from "react-icons/fa";
 
 interface Props {
@@ -34,14 +35,14 @@ const TopNav: React.FC<Props> = ({
 			</div>
 			<div className="flex items-center justify-end w-1/3 h-full md:w-2/3">
 				<div className="flex items-center justify-center mr-20 scale-0 lg:scale-100">
-					{links.map((navItem, index) => {
+					{links.map(navItem => {
 						return (
 							<div
 								className="flex flex-col items-center justify-center h-full transition-colors cursor-pointer group"
 								onClick={() => navigate(navItem.url)}
 							>
 								<p
-									key={index}
+									key={nanoid()}
 									className="px-10 text-xl font-bold border-none d"
 								>
 									{navItem.name}

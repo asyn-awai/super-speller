@@ -14,22 +14,20 @@ interface Props {
 
 const Home: React.FC<Props> = ({ darkMode, setDarkMode }): JSX.Element => {
 	return (
-		<>
-			<Layout
-				navbarProps={[
-					{ name: "Home", url: "/" },
-					{ name: "About", url: "/about" },
-					{ name: "Contact", url: "/contact" },
-				]}
-				darkMode={darkMode}
-				setDarkMode={setDarkMode}
-				topNav
-                footer
-			>
-				<Landing />
-				<GetStarted />
-			</Layout>
-		</>
+		<Layout
+			navbarProps={[
+				{ name: "Home", url: "/" },
+				{ name: "About", url: "/about" },
+				{ name: "Contact", url: "/contact" },
+			]}
+			darkMode={darkMode}
+			setDarkMode={setDarkMode}
+			topNav
+			footer
+		>
+			<Landing />
+			<GetStarted />
+		</Layout>
 	);
 };
 
@@ -87,8 +85,10 @@ const GetStarted: React.FC = (): JSX.Element => {
 
 	return (
 		<section>
-			<h1 className="text-3xl font-bold text-center d">What can you do?</h1>
-			<div className="min-h-[75vh] h-auto py-1 p-5 px-10 md:px-24 md:p-14 flex flex-col lg:flex-row items-center justify-between md:justify-around">
+			<h1 className="text-3xl font-bold text-center d">
+				What can you do?
+			</h1>
+			<div className="min-h-[75vh] h-auto py-1 p-5 px-10 md:px-24 md:p-14 flex flex-col lg:flex-row items-center justify-between md:justify-around d">
 				<Card
 					header="Create a list"
 					image={<FaThList color="#3b82f6" size={80} />}

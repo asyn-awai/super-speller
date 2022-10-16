@@ -18,11 +18,11 @@ const Dashboard: React.FC<Props> = ({ darkMode, setDarkMode }): JSX.Element => {
 			sideNav
 			footer
 		>
-			<div className="flex flex-col h-auto min-h-screen gap-5 mx-2 mb-10 md:mr-9">
+			<div className="flex flex-col h-auto min-h-screen gap-5 mx-2 mb-10">
 				<br />
 				{/*Overview*/}
 				<div className="flex items-center justify-around w-full border h-28">
-					<h1 className="text-xl font-bold">Activity</h1>
+					<h1 className="text-2xl font-bold">Activity</h1>
 					<div className="flex flex-row gap-14">
 						<p>0 day streak</p>
 						<p>0 xp this week</p>

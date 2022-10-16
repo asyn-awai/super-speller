@@ -9,9 +9,9 @@ interface NavbarItem {
 
 interface Props {
 	children: React.ReactNode;
-	navbarProps: NavbarItem[];
 	darkMode: boolean;
 	setDarkMode: React.Dispatch<React.SetStateAction<boolean>>;
+	navbarProps?: NavbarItem[];
 	topNav?: boolean;
 	sideNav?: boolean;
 	footer?: boolean;
@@ -19,15 +19,15 @@ interface Props {
 
 const Layout: React.FC<Props> = ({
 	children,
-	navbarProps,
 	darkMode,
 	setDarkMode,
+	navbarProps = [],
 	topNav = false,
 	sideNav = false,
 	footer = false,
 }): JSX.Element => {
 	return (
-		<div className="d">
+		<div className="w-auto h-auto sm:h-full sm:w-full d">
 			{sideNav && (
 				<div className="fixed z-50 hidden w-24 transition-all duration-300 ease-in-out group hover:md:w-48 md:block">
 					<SideNav darkMode={darkMode} setDarkMode={setDarkMode} />
@@ -40,12 +40,12 @@ const Layout: React.FC<Props> = ({
 					setDarkMode={setDarkMode}
 				/>
 			)}
-			<div className={`${sideNav && "md:ml-36"} px-5 md:px-0`}>
+			<div className={`${sideNav && "md:ml-36"} px-5 md:px-0 d md:mr-10`}>
 				{children}
 			</div>
 			{footer && (
 				<>
-					<br />
+					{/* <br /> */}
 					<footer
 						className={`${
 							sideNav && "pl-32"

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
+import { nanoid } from "nanoid";
 import {
 	FaThList,
 	FaUserCircle,
@@ -37,7 +38,11 @@ const SideNav: React.FC<Props> = ({ darkMode, setDarkMode }): JSX.Element => {
 						"Test",
 						"Test",
 					].map(item => (
-						<NavItem item={item} darkMode={darkMode} />
+						<NavItem
+							item={item}
+							darkMode={darkMode}
+							key={nanoid()}
+						/>
 					))}
 				</div>
 				<div>
@@ -76,6 +81,7 @@ const NavItem: React.FC<{
 					setDarkMode(!darkMode);
 				} else {
 					window.location.pathname = itemInfo.path ?? "";
+					itemInfo.onClick();
 				}
 			}}
 		>
@@ -93,6 +99,7 @@ const getNavItem = (
 ): {
 	image: JSX.Element;
 	path: string | null;
+	onClick: () => void;
 } => {
 	item = item.toLowerCase();
 	return (
@@ -100,30 +107,36 @@ const getNavItem = (
 			test: {
 				image: <FaThList className="mx-5" size={25} color="white" />,
 				path: "/",
+				onClick: () => {},
 			},
 			dashboard: {
 				image: <FaChartPie className="mx-5" size={25} color="white" />,
 				path: "/dashboard",
+				onClick: () => {},
 			},
 			lists: {
 				image: <FaThList className="mx-5" size={25} color="white" />,
 				path: "/lists",
+				onClick: () => {},
 			},
 			leaderboard: {
 				image: <FaTrophy className="mx-5" size={25} color="white" />,
 				path: "/leaderboard",
+				onClick: () => {},
 			},
 			mastery: {
 				image: (
 					<FaGraduationCap className="mx-5" size={25} color="white" />
 				),
 				path: "/mastery",
+				onClick: () => {},
 			},
 			profile: {
 				image: (
 					<FaUserCircle className="mx-5" size={25} color="white" />
 				),
 				path: "/",
+				onClick: () => {},
 			},
 			logout: {
 				image: (
@@ -137,6 +150,9 @@ const getNavItem = (
 					/>
 				),
 				path: "/",
+				onClick: () => {
+					localStorage.removeItem("authUser");
+				},
 			},
 			theme: {
 				image: darkMode ? (
@@ -145,8 +161,13 @@ const getNavItem = (
 					<FaSun className="mx-5" size={25} color="white" />
 				),
 				path: null,
+				onClick: () => {},
 			},
 		}[item] ??
-		({ path: null } as { image: JSX.Element; path: string | null })
+		({ path: null, onClick: () => {} } as {
+			image: JSX.Element;
+			path: string | null;
+			onClick: () => void;
+		})
 	);
 };

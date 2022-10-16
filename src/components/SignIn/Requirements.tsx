@@ -51,7 +51,8 @@ const Requirements: React.FC<Props> = ({
 			setValidInput(!passwordTests[test](password));
 		}
 		if (password !== confirmPassword) {
-			setValidInput(false);
+            //only set to false if not signing in
+			setValidInput(isUser);
 			return;
 		}
 		for (const test in usernameTests) {
@@ -59,7 +60,7 @@ const Requirements: React.FC<Props> = ({
 			//     setValidInput(false);
 			//     return;
 			// }
-			setValidInput(!usernameTests[test](username));
+			setValidInput(isUser ? true : !usernameTests[test](username));
 		}
 		if (emailTest(email)) {
 			setValidInput(false);
