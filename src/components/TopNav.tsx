@@ -39,10 +39,10 @@ const TopNav: React.FC<Props> = ({
 						return (
 							<div
 								className="flex flex-col items-center justify-center h-full transition-colors cursor-pointer group"
-								onClick={() => navigate(navItem.url)}
+								key={nanoid()}
+                                onClick={() => navigate(navItem.url)}
 							>
 								<p
-									key={nanoid()}
 									className="px-10 text-xl font-bold border-none d"
 								>
 									{navItem.name}

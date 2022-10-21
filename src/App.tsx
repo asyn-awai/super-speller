@@ -5,6 +5,7 @@ import NotFound from "./pages/NotFound";
 import SignIn from "./pages/SignIn";
 import Dashboard from "./pages/Dashboard";
 import Lists from "./pages/Lists";
+import Leaderboard from './pages/Leaderboard';
 //https://blog.logrocket.com/build-crud-application-react-firebase-web-sdk-v9/#:~:text=To%20integrate%20Firebase%20into%20our,Firebase%20in%20our%20react%20app.&text=Copy%20the%20config%20to%20the,console%20to%20complete%20the%20process.
 import { collection, DocumentData, getDocs } from "firebase/firestore";
 import db from "./firebase";
@@ -35,7 +36,12 @@ function App() {
 	useEffect(() => {
 		const user = localStorage.getItem("authUser");
 		if (user) {
-			setAuthUser(JSON.parse(user));
+			try {
+                setAuthUser(JSON.parse(user));
+            } catch (e) {
+                console.error("Error parsing JSON, clearing local storage")
+                localStorage.clear();
+            }
 		}
 	}, []);
 
@@ -91,6 +97,15 @@ function App() {
 							/>
 						}
 					/>
+                    <Route
+                        path="/leaderboard"
+                        element={
+                            <Leaderboard
+                                darkMode={darkMode}
+                                setDarkMode={setDarkMode}
+                            />
+                        }
+                    />
 					<Route path="*" element={<NotFound />} />
 				</Routes>
 			</Router>

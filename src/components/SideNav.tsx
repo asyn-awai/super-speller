@@ -28,7 +28,7 @@ const SideNav: React.FC<Props> = ({ darkMode, setDarkMode }): JSX.Element => {
 				</h1>
 			</div>
 			<br />
-			<div className="flex flex-col justify-between h-[85%]">
+			<div className="flex flex-col justify-between h-[85%] overflow-x-hidden overflow-y-scroll scrollbar-hide">
 				<div>
 					{[
 						"Dashboard",

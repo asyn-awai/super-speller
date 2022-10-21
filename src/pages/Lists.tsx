@@ -1,9 +1,10 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import db from "../firebase";
 import Layout from "../components/Layout";
-// import { Modal } from "react-responsive-modal";
-import { FaShare, FaEdit, FaEllipsisH } from "react-icons/fa";
+import { FaPlus, FaShare, FaEdit, FaEllipsisH } from "react-icons/fa";
 import { MdQuiz } from "react-icons/md";
+import Modal from "../components/Modal";
+import { enableBodyScroll, disableBodyScroll } from 'body-scroll-lock'
 
 interface Props {
 	darkMode: boolean;
@@ -21,6 +22,14 @@ const Lists: React.FC<Props> = ({ darkMode, setDarkMode }): JSX.Element => {
 					<div className="flex items-center justify-start w-full h-36">
 						<h1 className="text-2xl font-bold">Your Lists</h1>
 					</div>
+                    <div>
+                        <div className='w-36 h-10 flex items-center justify-center rounded-lg bg-blue-500 hover:bg-blue-600 cursor-pointer'>
+                            <p className='font-bold text-xl mr-3 text-white'>New List</p>
+                            <span>
+                                <FaPlus size={20} color="fff"/>
+                            </span>
+                        </div>
+                    </div>
 					<div className="flex flex-wrap items-center justify-evenly sm:basis-1/2">
 						<ListCard setModalProps={setModalProps} />
 						<ListCard setModalProps={setModalProps} />
@@ -100,21 +109,46 @@ const Options: React.FC<OptionsProps> = ({
 		);
 	};
 	const [open, setOpen] = useState(false);
-	const modalRef = useRef<HTMLDivElement>(null);
+    useEffect(() => {
+        const root = document.getElementById('root');
+        if (open) {
+            disableBodyScroll(root);
+        } else {
+            enableBodyScroll(root);
+            setContent(<></>);
+        }
+    }, [open])
+    const [content, setContent] = useState<React.ReactNode>(<></>);
 	return (
 		<>
+            <Modal open={open} setOpen={setOpen} setContent={setContent}>
+                {content}
+            </Modal>
 			<div className="flex justify-between">
 				<div className="flex gap-3">
 					{editable && (
 						<OptionButton
 							icon={<FaEdit color={"white"} />}
 							title="edit"
+							onClick={() => setOpen(true)}
 						/>
 					)}
 					{shareable && (
 						<OptionButton
 							icon={<FaShare color={"white"} />}
 							title="share"
+							onClick={() => {
+                                setOpen(true);
+                                setContent(
+                                    <div className="flex flex-col items-center justify-between w-96 h-96">
+                                        <h2 className="text-2xl">Share</h2>
+                                        <div className="flex items-center justify-center h-52 w-52 bg-gray-300">
+                                            qr code
+                                        </div>
+                                        <p>link</p>
+                                    </div>
+                                )
+                            }}
 						/>
 					)}
 					{moreInfo && (
