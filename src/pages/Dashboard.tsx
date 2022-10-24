@@ -15,22 +15,23 @@ const Dashboard: React.FC<Props> = ({ darkMode, setDarkMode }): JSX.Element => {
 			navbarProps={[{ name: "Home", url: "/" }]}
 			darkMode={darkMode}
 			setDarkMode={setDarkMode}
+            centerContent
 			sideNav
 			footer
 		>
-			<div className="flex flex-col h-auto min-h-screen gap-5 mx-2 mb-10">
+			<div className="flex flex-col h-auto min-h-screen gap-5 mx-2 mb-10 w-3/4">
 				<br />
 				{/*Overview*/}
-				<div className="flex items-center justify-around w-full border h-28">
-					<h1 className="text-2xl font-bold">Activity</h1>
-					<div className="flex flex-row gap-14">
+				<div className="flex items-center justify-around border h-28">
+					{/* <h1 className="text-2xl font-bold">Activity</h1> */}
+					{/* <div className="flex flex-row gap-14"> */}
 						<p>0 day streak</p>
 						<p>0 xp this week</p>
 						<p>0 lessons completed this week</p>
-					</div>
+					{/* </div> */}
 				</div>
 				<br />
-				<div className="flex gap-x-5 h-52">
+				<div className="flex flex-col md:flex-row gap-5 h-52">
 					{/*Info*/}
 					<div
 						style={{
@@ -38,7 +39,7 @@ const Dashboard: React.FC<Props> = ({ darkMode, setDarkMode }): JSX.Element => {
 								https://imgs.search.brave.com/4uc-i_KFw4ow4hc5IPaSYzlu5cb0gD_ha22otUTk0RU/rs:fit:768:290:1/g:ce/aHR0cHM6Ly93d3cu/dGl2cGVyZnVtZS5j/b20vd3AtY29udGVu/dC91cGxvYWRzLzIw/MTcvMDEvTmV3cy1C/YW5uZXItSW1hZ2Ut/NzY4eDI5MC5wbmc
 							)`,
 						}}
-						className="w-[60%] h-full p-5 md:bg-cover rounded"
+						className="w-full md:w-[60%] h-full p-5 md:bg-cover rounded"
 					>
 						{/* position one div on top left and the other on bottom right */}
 						<h1 className="text-2xl font-bold text-white">
@@ -56,7 +57,7 @@ const Dashboard: React.FC<Props> = ({ darkMode, setDarkMode }): JSX.Element => {
 						</div>
 					</div>
 					{/*Info side*/}
-					<div className="w-[40%] h-full border"></div>
+					<div className="w-full md:w-[40%] h-full border">side</div>
 				</div>
 				<br />
 				{/* Recently Viewed */}
