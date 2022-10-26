@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import { useNavigate, Outlet } from 'react-router-dom';
 import db from "../firebase";
 import Layout from "../components/Layout";
 import { FaPlus, FaShare, FaEdit, FaEllipsisH } from "react-icons/fa";
@@ -12,45 +13,51 @@ interface Props {
 }
 
 const Lists: React.FC<Props> = ({ darkMode, setDarkMode }): JSX.Element => {
+    const navigate = useNavigate();
 	const [modalProps, setModalProps] = useState<React.ReactNode | null>(null);
 	return (
-		<Layout darkMode={darkMode} setDarkMode={setDarkMode} sideNav>
-			{/* <Modal open={true} onClose={() => {}} center /> */}
-			<br />
-			<div className="min-h-screen">
-				<div className="flex flex-col h-auto gap-5 mx-2 mb-10">
-					<div className="flex items-center justify-start w-full h-36">
-						<h1 className="text-2xl font-bold">Your Lists</h1>
-					</div>
-                    <div>
-                        <div className='w-36 h-10 flex items-center justify-center rounded-lg bg-blue-500 hover:bg-blue-600 cursor-pointer'>
-                            <p className='font-bold text-xl mr-3 text-white'>New List</p>
-                            <span>
-                                <FaPlus size={20} color="fff"/>
-                            </span>
+        <>
+		    <Layout darkMode={darkMode} setDarkMode={setDarkMode} sideNav>
+    			{/* <Modal open={true} onClose={() => {}} center /> */}
+    			<br />
+    			<div className="min-h-screen">
+    				<div className="flex flex-col h-auto gap-5 mx-2 mb-10">
+    					<div className="flex items-center justify-start w-full h-36">
+    						<h1 className="text-2xl font-bold">Your Lists</h1>
+    					</div>
+                        <div>
+                            <div 
+                                className='w-36 h-10 flex items-center justify-center rounded-lg bg-blue-500 hover:bg-blue-600 cursor-pointer'
+                                onClick={() => navigate('/lists/create')}
+                            >
+                                <p className='font-bold text-xl mr-3 text-white'>New List</p>
+                                <span>
+                                    <FaPlus size={20} color="fff"/>
+                                </span>
+                            </div>
                         </div>
-                    </div>
-					<div className="flex flex-wrap items-center justify-evenly sm:basis-1/2">
-						<ListCard setModalProps={setModalProps} />
-						<ListCard setModalProps={setModalProps} />
-						<ListCard setModalProps={setModalProps} />
-						<ListCard setModalProps={setModalProps} />
-					</div>
-				</div>
-				<div className="flex flex-col h-auto gap-5 mx-2 mb-10">
-					<div className="flex items-center justify-start w-full h-36">
-						<h1 className="text-2xl font-bold">Saved Lists</h1>
-					</div>
-					<div className="flex flex-wrap items-center justify-evenly sm:flex-row md:basis-2">
-						<ListCard setModalProps={setModalProps} />
-						<ListCard setModalProps={setModalProps} />
-						<ListCard setModalProps={setModalProps} />
-						<ListCard setModalProps={setModalProps} />
-					</div>
-				</div>
-			</div>
-			<br />
-		</Layout>
+    					<div className="flex flex-wrap items-center justify-evenly sm:basis-1/2">
+    						<ListCard setModalProps={setModalProps} />
+    						<ListCard setModalProps={setModalProps} />
+    						<ListCard setModalProps={setModalProps} />
+    						<ListCard setModalProps={setModalProps} />
+    					</div>
+    				</div>
+    				<div className="flex flex-col h-auto gap-5 mx-2 mb-10">
+    					<div className="flex items-center justify-start w-full h-36">
+    						<h1 className="text-2xl font-bold">Saved Lists</h1>
+    					</div>
+    					<div className="flex flex-wrap items-center justify-evenly sm:flex-row md:basis-2">
+    						<ListCard setModalProps={setModalProps} />
+    						<ListCard setModalProps={setModalProps} />
+    						<ListCard setModalProps={setModalProps} />
+    						<ListCard setModalProps={setModalProps} />
+    					</div>
+    				</div>
+    			</div>
+    			<br />
+    		</Layout>
+        </>
 	);
 };
 
@@ -140,11 +147,12 @@ const Options: React.FC<OptionsProps> = ({
 							onClick={() => {
                                 setOpen(true);
                                 setContent(
-                                    <div className="flex flex-col items-center justify-between w-96 h-96">
+                                    <div className="flex flex-col items-center justify-between  md:max-w-sm md:h-64 lg:max-w-lg lg:h-96 aspect-square">
                                         <h2 className="text-2xl">Share</h2>
-                                        <div className="flex items-center justify-center h-52 w-52 bg-gray-300">
+                                        <div className="flex items-center justify-center h-64 w-64 bg-gray-300">
                                             qr code
                                         </div>
+                                        <br /> 
                                         <p>link</p>
                                     </div>
                                 )

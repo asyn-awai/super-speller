@@ -35,8 +35,8 @@ const SideNav: React.FC<Props> = ({ darkMode, setDarkMode }): JSX.Element => {
 						"Lists",
 						"Leaderboard",
 						"Mastery",
-						"Test",
-						"Test",
+						// "Test",
+						// "Test",
 					].map(item => (
 						<NavItem
 							item={item}

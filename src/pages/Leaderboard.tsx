@@ -1,4 +1,5 @@
 import React from "react";
+import { nanoid } from "nanoid";
 import Layout from "../components/Layout";
 import { FaTrophy } from "react-icons/fa";
 
@@ -116,7 +117,7 @@ const LeaderboardItems: React.FC<{
 	return (
 		<div className="flex flex-col w-full">
 			{items.map((item, index) => (
-				<Item item={item} index={index} />
+				<Item item={item} index={index} key={nanoid()} />
 			))}
 		</div>
 	);

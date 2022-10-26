@@ -5,7 +5,9 @@ import NotFound from "./pages/NotFound";
 import SignIn from "./pages/SignIn";
 import Dashboard from "./pages/Dashboard";
 import Lists from "./pages/Lists";
+import Create from './pages/Create';
 import Leaderboard from './pages/Leaderboard';
+import Mastery from './pages/Mastery'
 //https://blog.logrocket.com/build-crud-application-react-firebase-web-sdk-v9/#:~:text=To%20integrate%20Firebase%20into%20our,Firebase%20in%20our%20react%20app.&text=Copy%20the%20config%20to%20the,console%20to%20complete%20the%20process.
 import { collection, DocumentData, getDocs } from "firebase/firestore";
 import db from "./firebase";
@@ -88,6 +90,15 @@ function App() {
 							/>
 						}
 					/>
+                    <Route 
+                        path="/lists/create" 
+                        element={
+                            <Create 
+                                darkMode={darkMode}
+                                setDarkMode={setDarkMode}
+                            />
+                        } 
+                    />
 					<Route
 						path="/lists"
 						element={
@@ -101,6 +112,15 @@ function App() {
                         path="/leaderboard"
                         element={
                             <Leaderboard
+                                darkMode={darkMode}
+                                setDarkMode={setDarkMode}
+                            />
+                        }
+                    />
+                    <Route
+                        path='/mastery'
+                        element={
+                            <Mastery
                                 darkMode={darkMode}
                                 setDarkMode={setDarkMode}
                             />
