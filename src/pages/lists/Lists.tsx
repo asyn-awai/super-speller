@@ -39,10 +39,12 @@ const Lists: React.FC<Props> = ({ darkMode, setDarkMode }): JSX.Element => {
 							</div>
 						</div>
 						<div className="flex flex-wrap items-center justify-evenly sm:basis-1/2">
-							<ListCard setModalProps={setModalProps} />
-							<ListCard setModalProps={setModalProps} />
-							<ListCard setModalProps={setModalProps} />
-							<ListCard setModalProps={setModalProps} />
+							{[0, 1, 2, 3].map(() => (
+								<ListCard
+									setModalProps={setModalProps}
+									darkMode={darkMode}
+								/>
+							))}
 						</div>
 					</div>
 					<div className="flex flex-col h-auto gap-5 mx-2 mb-10">
@@ -50,10 +52,12 @@ const Lists: React.FC<Props> = ({ darkMode, setDarkMode }): JSX.Element => {
 							<h1 className="text-2xl font-bold">Saved Lists</h1>
 						</div>
 						<div className="flex flex-wrap items-center justify-evenly sm:flex-row md:basis-2">
-							<ListCard setModalProps={setModalProps} />
-							<ListCard setModalProps={setModalProps} />
-							<ListCard setModalProps={setModalProps} />
-							<ListCard setModalProps={setModalProps} />
+							{[0, 1, 2, 3, 4].map(() => (
+								<ListCard
+									setModalProps={setModalProps}
+									darkMode={darkMode}
+								/>
+							))}
 						</div>
 					</div>
 				</div>
@@ -67,9 +71,13 @@ export default Lists;
 
 interface LCProps {
 	setModalProps: React.Dispatch<React.SetStateAction<React.ReactNode>>;
+	darkMode: boolean;
 }
 
-const ListCard: React.FC<LCProps> = ({ setModalProps }): JSX.Element => {
+const ListCard: React.FC<LCProps> = ({
+	setModalProps,
+	darkMode,
+}): JSX.Element => {
 	return (
 		<div className="flex flex-col w-full max-w-xs p-4 m-5 bg-white rounded-lg shadow-md h-96 dark:bg-gray-800 gap-y-2">
 			<title className="text-xl font-bold dark:text-white line-clamp-1 d">
@@ -86,7 +94,7 @@ const ListCard: React.FC<LCProps> = ({ setModalProps }): JSX.Element => {
 				id, ut sunt debitis nobis soluta iste delectus incidunt. Minus,
 				repellat facilis!
 			</p>
-			<Options editable shareable moreInfo />
+			<Options editable shareable moreInfo darkMode={darkMode} />
 		</div>
 	);
 };
@@ -95,12 +103,14 @@ interface OptionsProps {
 	editable: boolean;
 	shareable: boolean;
 	moreInfo: boolean;
+	darkMode: boolean;
 }
 
 const Options: React.FC<OptionsProps> = ({
 	editable,
 	shareable,
 	moreInfo,
+	darkMode,
 }): JSX.Element => {
 	const OptionButton: React.FC<{
 		icon: JSX.Element;
@@ -128,9 +138,15 @@ const Options: React.FC<OptionsProps> = ({
 		}
 	}, [open]);
 	const [content, setContent] = useState<React.ReactNode>(<></>);
+	const [title, setTitle] = useState<string>("");
 	return (
 		<>
-			<Modal open={open} setOpen={setOpen} setContent={setContent}>
+			<Modal
+				open={open}
+				setOpen={setOpen}
+				darkMode={darkMode}
+				title={title}
+			>
 				{content}
 			</Modal>
 			<div className="flex justify-between">
@@ -147,9 +163,9 @@ const Options: React.FC<OptionsProps> = ({
 							icon={<FaShare color={"white"} />}
 							title="share"
 							onClick={() => {
-								setOpen(true);
+								setTitle("Share");
 								setContent(
-									<div className="flex flex-col items-center justify-between  md:max-w-sm md:h-64 lg:max-w-lg lg:h-96 aspect-square">
+									<div className="flex flex-col items-center justify-between md:max-w-sm md:h-64 lg:max-w-lg lg:h-96 aspect-square">
 										<h2 className="text-2xl">Share</h2>
 										<div className="flex items-center justify-center h-64 w-64 bg-gray-300">
 											qr code
@@ -158,6 +174,7 @@ const Options: React.FC<OptionsProps> = ({
 										<p>link</p>
 									</div>
 								);
+								setOpen(true);
 							}}
 						/>
 					)}

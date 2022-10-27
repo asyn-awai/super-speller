@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useLocation } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { nanoid } from "nanoid";
 import {
 	FaThList,
@@ -37,11 +37,12 @@ const SideNav: React.FC<Props> = ({ darkMode, setDarkMode }): JSX.Element => {
 						"Mastery",
 						// "Test",
 						// "Test",
-					].map(item => (
+					].map((item, i) => (
+                        // nano id breaks animation?
 						<NavItem
 							item={item}
 							darkMode={darkMode}
-							key={nanoid()}
+							key={i}
 						/>
 					))}
 				</div>
@@ -66,6 +67,7 @@ const NavItem: React.FC<{
 	darkMode: boolean;
 	setDarkMode?: React.Dispatch<React.SetStateAction<boolean>>;
 }> = ({ item, darkMode, setDarkMode = null }): JSX.Element => {
+    const navigate = useNavigate();
 	const sameLocation =
 		window.location.pathname.substring(1) === item.toLowerCase();
 	const itemInfo = getNavItem(item, darkMode);
@@ -80,7 +82,7 @@ const NavItem: React.FC<{
 				if (setDarkMode) {
 					setDarkMode(!darkMode);
 				} else {
-					window.location.pathname = itemInfo.path ?? "";
+					navigate(itemInfo.path ?? "");
 					itemInfo.onClick();
 				}
 			}}
