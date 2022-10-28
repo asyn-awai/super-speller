@@ -1,10 +1,22 @@
 import React, { useState, useEffect, useRef } from "react";
+import db from "../../firebase";
 import { nanoid } from "nanoid";
 import { DictionaryAPIResponse } from "../../types";
 import Layout from "../../components/Layout";
-import { FaSearch, FaPlus, FaTimes } from "react-icons/fa";
+import { FaCloudUploadAlt, FaSearch, FaPlus, FaTimes } from "react-icons/fa";
 import Modal from "../../components/Modal";
 import { enableBodyScroll, disableBodyScroll } from "body-scroll-lock";
+import {
+	addDoc,
+	collection,
+	doc,
+	getDoc,
+	getDocs,
+	query,
+	updateDoc,
+	where,
+} from "firebase/firestore";
+import { useLocation, useNavigate } from "react-router-dom";
 
 interface Word {
 	word: string;
@@ -23,14 +35,92 @@ interface Props {
 }
 
 const Create: React.FC<Props> = ({ darkMode, setDarkMode }): JSX.Element => {
+	const navigate = useNavigate();
+	const location = useLocation();
+	const [isEditing, setIsEditing] = useState<boolean>(false);
 	const [wordsList, setWordsList] = useState<Word[]>([]);
-    const [options, setOptions] = useState<{
-        hideWordInfo: boolean;
-    }>({
-        hideWordInfo: false
-    });
-    const [listTitle, setListTitle] = useState("");
-    const [listDescription, setListDescription] = useState("");
+	const [options, setOptions] = useState<{
+		hideWordInfo: boolean;
+	}>({
+		hideWordInfo: false,
+	});
+	const [listTitle, setListTitle] = useState("");
+	const [listDescription, setListDescription] = useState("");
+	const titleRef = useRef<HTMLInputElement>(null);
+	const descriptionRef = useRef<HTMLInputElement>(null);
+	useEffect(() => {
+		//if user is editing a list
+		(async () => {
+			const authUser = JSON.parse(
+				localStorage.getItem("authUser") ?? "{}"
+			);
+			const listId = location.pathname.split("/").pop();
+			if (listId === "create") return;
+			setIsEditing(true);
+			const listData = await getDocs(
+				query(
+					collection(db, "lists"),
+					where("listId", "==", listId),
+					where("authorUsername", "==", authUser.username)
+				)
+			);
+			if (listData.size === 0) {
+				navigate("/lists");
+				alert(
+					"The list you are trying to access does not exist, or you do not have permission to access it."
+				);
+				return;
+			}
+			setWordsList(listData.docs[0].data().listContent);
+			setListTitle(listData.docs[0].data().listTitle);
+			setListDescription(listData.docs[0].data().listDescription);
+			titleRef.current!.value = listData.docs[0].data().listTitle;
+			descriptionRef.current!.value =
+				listData.docs[0].data().listDescription;
+		})();
+	}, []);
+	const publishList = async () => {
+		if (
+			wordsList.length === 0 ||
+			listTitle === "" ||
+			listDescription === ""
+		)
+			return;
+		try {
+            const author = JSON.parse(
+                localStorage.getItem("authUser") ?? "{}"
+            );
+            if (!author.password || !author.email || !author.username)
+                navigate("/signin");
+			if (!isEditing) {
+				await addDoc(collection(db, "lists"), {
+					authorUsername: author.username,
+					listId: nanoid(),
+					listTitle,
+					listDescription,
+					listContent: wordsList,
+				});
+			} else {
+                //update the doc with the same listId
+                const listId = location.pathname.split("/").pop();
+                const listData = await getDocs(
+                    query(
+                        collection(db, "lists"),
+                        where("listId", "==", listId),
+                        where("authorUsername", "==", author.username)
+                    )
+                );
+                await updateDoc(doc(db, "lists", listData.docs[0].id), {
+                    listTitle,
+                    listDescription,
+                    listContent: wordsList,
+                });
+            }
+			navigate("/lists");
+		} catch (err) {
+			alert(err);
+		}
+	};
 	return (
 		<Layout darkMode={darkMode} setDarkMode={setDarkMode} sideNav>
 			{/* <br /> */}
@@ -49,11 +139,33 @@ const Create: React.FC<Props> = ({ darkMode, setDarkMode }): JSX.Element => {
 							</label>
 							<ul
 								id="options"
-								className="items-center w-auto text-sm font-medium text-gray-900 bg-white rounded-lg border border-gray-200 flex dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+								className="flex gap-5 items-center w-auto text-sm font-medium text-gray-900 dark:text-white"
 							>
 								{["Hide word info"].map(title => (
 									<Checkbox title={title} key={nanoid()} />
 								))}
+								<div
+									role="button"
+									className={`text-sm h-10 w-40 rounded-lg transition-colors flex items-center justify-center select-none
+                                            ${
+												wordsList.length === 0 ||
+												listTitle === "" ||
+												listDescription === ""
+													? "bg-gray-500 cursor-not-allowed"
+													: "bg-blue-500 hover:bg-blue-600"
+											}`}
+									onClick={publishList}
+								>
+									<span className="mr-2">
+										<FaCloudUploadAlt
+											size={15}
+											color="white"
+										/>
+									</span>
+									<p className="md:block hidden text-white font-semibold">
+										Publish
+									</p>
+								</div>
 							</ul>
 						</div>
 					</div>
@@ -68,8 +180,10 @@ const Create: React.FC<Props> = ({ darkMode, setDarkMode }): JSX.Element => {
 								</label>
 								<input
 									id="title"
+									ref={titleRef}
 									className="input-form-create"
 									placeholder="Title"
+									onChange={e => setListTitle(e.target.value)}
 								/>
 							</div>
 							<div className="w-1/2">
@@ -81,16 +195,31 @@ const Create: React.FC<Props> = ({ darkMode, setDarkMode }): JSX.Element => {
 								</label>
 								<input
 									id="description"
+									ref={descriptionRef}
 									className="input-form-create"
 									placeholder="Description"
+									onChange={e =>
+										setListDescription(e.target.value)
+									}
 								/>
 							</div>
 						</div>
 						<div className="w-3/4">
-                            {wordsList.map(({ word, definition }) => {
-                                return <WordCard word={word} definition={definition} setWordsList={setWordsList} key={nanoid()} />
-                            })}
-							<AddWordCard darkMode={darkMode} setWordsList={setWordsList} />
+							{wordsList.map(({ word, definition }) => {
+								return (
+									<WordCard
+										word={word}
+										definition={definition}
+										setWordsList={setWordsList}
+										key={nanoid()}
+									/>
+								);
+							})}
+							<AddWordCard
+								darkMode={darkMode}
+								wordsList={wordsList}
+								setWordsList={setWordsList}
+							/>
 						</div>
 					</div>
 				</div>
@@ -103,7 +232,7 @@ export default Create;
 
 const Checkbox: React.FC<{ title: string }> = ({ title }) => {
 	return (
-		<li className="w-auto border-b border-gray-200 sm:border-b-0 sm:border-r dark:border-gray-600">
+		<li className="w-40 bg-white dark:bg-gray-700 rounded-lg border border-gray-200 flex dark:border-gray-600">
 			<div className="flex items-center pl-3 mr-2">
 				<input
 					id={`${title}-checkbox`}
@@ -113,7 +242,7 @@ const Checkbox: React.FC<{ title: string }> = ({ title }) => {
 				/>
 				<label
 					htmlFor={`${title}-checkbox`}
-					className="py-3 ml-2 w-full text-sm font-medium text-gray-900 dark:text-gray-300 select-none"
+					className="py-3 ml-2 text-sm font-medium text-gray-900 dark:text-gray-300 select-none"
 				>
 					{title}
 				</label>
@@ -123,10 +252,10 @@ const Checkbox: React.FC<{ title: string }> = ({ title }) => {
 };
 
 const WordCard: React.FC<{
-    word: string,
-    definition: string,
-    setWordsList: React.Dispatch<React.SetStateAction<Word[]>>;
-    hideDef?: boolean
+	word: string;
+	definition: string;
+	setWordsList: React.Dispatch<React.SetStateAction<Word[]>>;
+	hideDef?: boolean;
 }> = ({ word, definition, setWordsList, hideDef = false }) => {
 	return (
 		<div className="p-4 my-8 border border-gray-200 rounded-lg sm:p-6 lg:p-8 dark:border-gray-700 bg-white dark:bg-gray-700">
@@ -136,16 +265,16 @@ const WordCard: React.FC<{
 				</div>
 				{!hideDef && (
 					<div className="w-3/5 h-auto break-words line-clamp-3">
-                        {definition}
+						{definition}
 					</div>
 				)}
-				<div 
-                    className="flex justify-end w-1/12 cursor-pointer"
+				<div
+					className="flex justify-end w-1/12 cursor-pointer"
 					onClick={() => {
-                        setWordsList(prev => prev.filter(x => x.word !== word))
-                    }}
-                >
-                    <FaTimes size={25} color={"#3b82f6"} />
+						setWordsList(prev => prev.filter(x => x.word !== word));
+					}}
+				>
+					<FaTimes size={25} color={"#3b82f6"} />
 				</div>
 			</div>
 		</div>
@@ -154,13 +283,14 @@ const WordCard: React.FC<{
 
 const AddWordCard: React.FC<{
 	darkMode: boolean;
-    setWordsList: React.Dispatch<React.SetStateAction<Word[]>>;
-}> = ({ darkMode, setWordsList }): JSX.Element => {
+	wordsList: Word[];
+	setWordsList: React.Dispatch<React.SetStateAction<Word[]>>;
+}> = ({ darkMode, wordsList, setWordsList }): JSX.Element => {
 	const [modalShow, setModalShow] = useState<boolean>(false);
 	const [wordQueryInfo, setWordQueryInfo] = useState<WordInfo[]>([]);
 	const [wordInput, setWordInput] = useState<string>("");
 	const [defInput, setDefInput] = useState<string>("");
-    const wordInputRef = useRef<HTMLInputElement>(null);
+	const wordInputRef = useRef<HTMLInputElement>(null);
 	const defInputRef = useRef<HTMLInputElement>(null);
 
 	useEffect(() => {
@@ -209,18 +339,23 @@ const AddWordCard: React.FC<{
 		}
 	};
 
-    const handleAddWord = () => {
-        if (wordInput.length === 0) return;
-        setWordsList(prev => [...prev, { word: wordInput.toLowerCase(), definition: defInput }])
-        setWordQueryInfo([]);
-        if (wordInputRef.current != null)
-            wordInputRef.current.value = "";
-        if (defInputRef.current != null)
-            defInputRef.current.value = "";
-        setWordInput("");
-        setDefInput("");
-    }
-    
+	const handleAddWord = () => {
+		if (
+			wordInput.length === 0 ||
+			wordsList.some(x => x.word === wordInput.toLowerCase())
+		)
+			return;
+		setWordsList(prev => [
+			...prev,
+			{ word: wordInput.toLowerCase(), definition: defInput },
+		]);
+		setWordQueryInfo([]);
+		if (wordInputRef.current != null) wordInputRef.current.value = "";
+		if (defInputRef.current != null) defInputRef.current.value = "";
+		setWordInput("");
+		setDefInput("");
+	};
+
 	return (
 		<>
 			<Modal
@@ -236,7 +371,7 @@ const AddWordCard: React.FC<{
 							key={nanoid()}
 							inputRef={defInputRef}
 							setModalShow={setModalShow}
-                            setDefInput={setDefInput}
+							setDefInput={setDefInput}
 						/>
 					))}
 				</div>
@@ -253,7 +388,7 @@ const AddWordCard: React.FC<{
 						<div className="flex">
 							<input
 								id="word-input"
-                                ref={wordInputRef}
+								ref={wordInputRef}
 								className="input-form-create dark:placeholder-gray-500 dark:bg-gray-800 w-full rounded-r-none"
 								onChange={e => setWordInput(e.target.value)}
 								placeholder="Word"
@@ -261,8 +396,14 @@ const AddWordCard: React.FC<{
 							<div
 								role="button"
 								className={`text-sm h-10 w-56 rounded-lg transition-colors flex items-center justify-center rounded-l-none select-none
-                                            ${wordInput.length === 0 ? "bg-gray-500 cursor-not-allowed" : "bg-blue-500 hover:bg-blue-600"}`}
-								onClick={() => { if (wordInput.length !== 0) handleGetDef() }}
+                                            ${
+												wordInput.length === 0
+													? "bg-gray-500 cursor-not-allowed"
+													: "bg-blue-500 hover:bg-blue-600"
+											}`}
+								onClick={() => {
+									if (wordInput.length !== 0) handleGetDef();
+								}}
 							>
 								<span className="mr-2">
 									<FaSearch size={15} color="white" />
@@ -285,19 +426,28 @@ const AddWordCard: React.FC<{
 							ref={defInputRef}
 							onChange={e => setDefInput(e.target.value)}
 							className="input-form-create dark:placeholder-gray-500 dark:bg-gray-800"
-							placeholder="Use the dictionary lookup button or use your own"
+							placeholder="Use the dictionary lookup button or type in your own"
 						/>
 						<div className="flex justify-end mt-5">
 							<div
 								role="button"
-								className={`text-sm h-10 w-28 rounded-lg transition-colors flex items-center justify-center border border-opacity-0
-                                            ${wordInput.length === 0 ? "bg-gray-500 cursor-not-allowed" : "bg-blue-500 hover:bg-blue-600"}`}
-                                onClick={handleAddWord}
+								className={`text-sm h-10 w-28 rounded-lg transition-colors flex items-center justify-center
+                                            ${
+												wordInput.length === 0 ||
+												wordsList.some(
+													x =>
+														x.word ===
+														wordInput.toLowerCase()
+												)
+													? "bg-gray-500 cursor-not-allowed"
+													: "bg-blue-500 hover:bg-blue-600"
+											}`}
+								onClick={handleAddWord}
 							>
 								<span className="mr-2">
 									<FaPlus size={15} color="white" />
 								</span>
-								<p className="text-white font-semibold">
+								<p className="text-white font-semibold select-none">
 									Add Word
 								</p>
 							</div>
@@ -322,7 +472,7 @@ const DefinitionCard: React.FC<{
 	partOfSpeech,
 	inputRef,
 	setModalShow,
-    setDefInput
+	setDefInput,
 }): JSX.Element => {
 	const partOfSpeechAbv = {
 		noun: "n.",
@@ -339,7 +489,7 @@ const DefinitionCard: React.FC<{
 	const setText = () => {
 		if (inputRef.current === null) return;
 		inputRef.current.value = definition;
-        setDefInput(definition);
+		setDefInput(definition);
 		setModalShow(false);
 	};
 	return (

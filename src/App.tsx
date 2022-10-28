@@ -91,7 +91,7 @@ function App() {
 						}
 					/>
                     <Route 
-                        path="/lists/create" 
+                        path="/lists/create/*" 
                         element={
                             <Create 
                                 darkMode={darkMode}

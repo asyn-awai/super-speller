@@ -1,11 +1,23 @@
 import React, { useState, useEffect, useRef } from "react";
-import { useNavigate, Outlet } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import db from "../../firebase";
 import Layout from "../../components/Layout";
 import { FaPlus, FaShare, FaEdit, FaEllipsisH } from "react-icons/fa";
 import { MdQuiz } from "react-icons/md";
 import Modal from "../../components/Modal";
 import { enableBodyScroll, disableBodyScroll } from "body-scroll-lock";
+import { getDocs, where, query, collection } from "firebase/firestore";
+
+interface ListDataItem {
+	authorUsername: string;
+	listId: string;
+	listContent: {
+		definition: string;
+		word: string;
+	}[];
+	listTitle: string;
+	listDescription: string;
+}
 
 interface Props {
 	darkMode: boolean;
@@ -15,6 +27,26 @@ interface Props {
 const Lists: React.FC<Props> = ({ darkMode, setDarkMode }): JSX.Element => {
 	const navigate = useNavigate();
 	const [modalProps, setModalProps] = useState<React.ReactNode | null>(null);
+	const [userListData, setUserListData] = useState<ListDataItem[]>([]);
+	useEffect(() => {
+		(async () => {
+			const authUser = JSON.parse(
+				localStorage.getItem("authUser") ?? "{}"
+			);
+			if (!authUser.password || !authUser.email || !authUser.username)
+				navigate("/signin");
+			console.log(authUser.username);
+			const querySnapshot = await getDocs(
+				query(
+					collection(db, "lists"),
+					where("authorUsername", "==", authUser.username)
+				)
+			);
+			setUserListData(
+				querySnapshot.docs.map(doc => doc.data()) as ListDataItem[]
+			);
+		})();
+	}, []);
 	return (
 		<>
 			<Layout darkMode={darkMode} setDarkMode={setDarkMode} sideNav>
@@ -39,12 +71,27 @@ const Lists: React.FC<Props> = ({ darkMode, setDarkMode }): JSX.Element => {
 							</div>
 						</div>
 						<div className="flex flex-wrap items-center justify-evenly sm:basis-1/2">
-							{[0, 1, 2, 3].map(() => (
-								<ListCard
-									setModalProps={setModalProps}
-									darkMode={darkMode}
-								/>
-							))}
+							{userListData.map(
+								(
+									{
+										listId,
+										listTitle,
+										authorUsername,
+										listDescription,
+									},
+									i
+								) => (
+									<ListCard
+										listId={listId}
+										title={listTitle}
+										author={authorUsername}
+										description={listDescription}
+										setModalProps={setModalProps}
+										darkMode={darkMode}
+										key={i}
+									/>
+								)
+							)}
 						</div>
 					</div>
 					<div className="flex flex-col h-auto gap-5 mx-2 mb-10">
@@ -70,36 +117,44 @@ const Lists: React.FC<Props> = ({ darkMode, setDarkMode }): JSX.Element => {
 export default Lists;
 
 interface LCProps {
+	listId?: string;
+	title?: string;
+	author?: string;
+	description?: string;
 	setModalProps: React.Dispatch<React.SetStateAction<React.ReactNode>>;
 	darkMode: boolean;
 }
 
 const ListCard: React.FC<LCProps> = ({
+	listId = "123",
+	title = "Title",
+	author = "Author",
+	description = "Description",
 	setModalProps,
 	darkMode,
 }): JSX.Element => {
 	return (
-		<div className="flex flex-col w-full max-w-xs p-4 m-5 bg-white rounded-lg shadow-md h-96 dark:bg-gray-800 gap-y-2">
-			<title className="text-xl font-bold dark:text-white line-clamp-1 d">
-				Title
+		<div className="flex flex-col w-full max-w-xs p-4 m-5 bg-white rounded-lg shadow-md max-h-96 dark:bg-gray-800 gap-y-2">
+			<title className="text-2xl font-bold dark:text-white line-clamp-1 d">
+				{title}
 			</title>
-			<small>Author</small>
-			<img
-				src="https://via.placeholder.com/150"
-				className="h-[40%] object-cover"
-			/>
-			<p className="mb-2 text-sm line-clamp-4">
-				Lorem ipsum dolor sit amet consectetur adipisicing elit. Beatae
-				quod praesentium rerum consequatur ab a at sapiente temporibus
-				id, ut sunt debitis nobis soluta iste delectus incidunt. Minus,
-				repellat facilis!
+			<small className="font-semibold">{author}</small>
+			<p className="mb-2 text-sm line-clamp-4 text-gray-400">
+				{description}
 			</p>
-			<Options editable shareable moreInfo darkMode={darkMode} />
+			<Options
+				editable
+				shareable
+				moreInfo
+				darkMode={darkMode}
+				listId={listId}
+			/>
 		</div>
 	);
 };
 
 interface OptionsProps {
+	listId: string;
 	editable: boolean;
 	shareable: boolean;
 	moreInfo: boolean;
@@ -107,11 +162,13 @@ interface OptionsProps {
 }
 
 const Options: React.FC<OptionsProps> = ({
+	listId,
 	editable,
 	shareable,
 	moreInfo,
 	darkMode,
 }): JSX.Element => {
+	const navigate = useNavigate();
 	const OptionButton: React.FC<{
 		icon: JSX.Element;
 		title: string;
@@ -155,7 +212,9 @@ const Options: React.FC<OptionsProps> = ({
 						<OptionButton
 							icon={<FaEdit color={"white"} />}
 							title="edit"
-							onClick={() => setOpen(true)}
+							onClick={() => {
+								navigate(`/lists/create/${listId}`);
+							}}
 						/>
 					)}
 					{shareable && (

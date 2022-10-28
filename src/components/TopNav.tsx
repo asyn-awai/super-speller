@@ -40,11 +40,9 @@ const TopNav: React.FC<Props> = ({
 							<div
 								className="flex flex-col items-center justify-center h-full transition-colors cursor-pointer group"
 								key={nanoid()}
-                                onClick={() => navigate(navItem.url)}
+								onClick={() => navigate(navItem.url)}
 							>
-								<p
-									className="px-10 text-xl font-bold border-none d"
-								>
+								<p className="px-10 text-xl font-bold border-none d">
 									{navItem.name}
 								</p>
 								<div className="w-full h-1 transition-all scale-0 bg-blue-400 group-hover:scale-100" />
@@ -55,7 +53,11 @@ const TopNav: React.FC<Props> = ({
 				<div className="flex items-center justify-center">
 					<button
 						className="w-24 h-10 mr-10 transition-colors bg-blue-500 sm:w-32 rounded-2xl hover:bg-blue-600"
-						onClick={() => navigate("/signin")}
+						onClick={() => {
+							localStorage.getItem("authUser")
+								? navigate("/dashboard")
+								: navigate("/login");
+						}}
 					>
 						<div className="flex items-center justify-center">
 							<FaSignInAlt

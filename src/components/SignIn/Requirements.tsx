@@ -1,6 +1,6 @@
 import React, { useEffect } from "react";
 import { FaCheck, FaTimes } from "react-icons/fa";
-import { nanoid } from "nanoid"
+import { nanoid } from "nanoid";
 
 const EMAIL_REGEX =
 	/^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
@@ -52,7 +52,7 @@ const Requirements: React.FC<Props> = ({
 			setValidInput(!passwordTests[test](password));
 		}
 		if (password !== confirmPassword) {
-            //only set to false if not signing in
+			//only set to false if not signing in
 			setValidInput(isUser);
 			return;
 		}
@@ -76,10 +76,7 @@ const Requirements: React.FC<Props> = ({
 				<ul>
 					{[0].map(i => {
 						return (
-							<div 
-                                className="flex items-center"
-                                key={nanoid()}
-                            >
+							<div className="flex items-center" key={nanoid()}>
 								{usernameTests[i](username) ? (
 									<FaTimes color="red" className="mr-1" />
 								) : (
@@ -112,10 +109,7 @@ const Requirements: React.FC<Props> = ({
 					{[0, 1, 2, 3, 4].map(i => {
 						const res = passwordTests[i](password);
 						return (
-							<div 
-                                className="flex items-center"
-                                key={nanoid()}
-                            >
+							<div className="flex items-center" key={nanoid()}>
 								{res ? (
 									<FaTimes color="red" className="mr-1" />
 								) : (

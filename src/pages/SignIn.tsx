@@ -52,24 +52,33 @@ const SignIn: React.FC<Props> = ({
 	) => {
 		e.preventDefault();
 		try {
-			if (!validInput) throw new Error("Invalid input");
-			const sameEmail = await getDocs(
-				query(collection(db, "user-data"), where("email", "==", email))
+			const userSearch = await getDocs(
+				query(
+					collection(db, "user-data"),
+					where("email", "==", email),
+					where("password", "==", password)
+				)
 			);
-			if (!isUser && sameEmail.size > 0) {
-				throw new Error("Email already in use");
-			}
-			if (!isUser)
+			if (!isUser) {
+				//signing up
+				if (userSearch.size > 0) {
+					throw new Error("Email already in use");
+				}
+				if (!validInput) throw new Error("Invalid input");
 				await addDoc(collection(db, "user-data"), {
 					username,
 					email,
 					password,
 				});
-			//set authuser in localstorage
+			} else {
+				//signing in
+				if (!email || !password)
+					throw new Error("Please fill in all fields");
+			}
 			localStorage.setItem(
 				"authUser",
 				JSON.stringify({
-					username,
+					username: userSearch.docs[0]?.data()?.username ?? username,
 					email,
 					password,
 				})
