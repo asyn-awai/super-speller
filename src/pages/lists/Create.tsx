@@ -141,9 +141,9 @@ const Create: React.FC<Props> = ({ darkMode, setDarkMode }): JSX.Element => {
 								id="options"
 								className="flex gap-5 items-center w-auto text-sm font-medium text-gray-900 dark:text-white"
 							>
-								{["Hide word info"].map(title => (
+								{/*["Hide word info"].map(title => (
 									<Checkbox title={title} key={nanoid()} />
-								))}
+								))*/}
 								<div
 									role="button"
 									className={`text-sm h-10 w-40 rounded-lg transition-colors flex items-center justify-center select-none

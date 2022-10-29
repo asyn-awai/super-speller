@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import db from "../../firebase";
 import Layout from "../../components/Layout";
-import { FaPlus, FaShare, FaEdit, FaEllipsisH } from "react-icons/fa";
+import { FaPlus, FaShare, FaEdit, FaEllipsisH, FaTrash } from "react-icons/fa";
 import { MdQuiz } from "react-icons/md";
 import Modal from "../../components/Modal";
 import { enableBodyScroll, disableBodyScroll } from "body-scroll-lock";
@@ -26,7 +26,6 @@ interface Props {
 
 const Lists: React.FC<Props> = ({ darkMode, setDarkMode }): JSX.Element => {
 	const navigate = useNavigate();
-	const [modalProps, setModalProps] = useState<React.ReactNode | null>(null);
 	const [userListData, setUserListData] = useState<ListDataItem[]>([]);
 	useEffect(() => {
 		(async () => {
@@ -86,7 +85,6 @@ const Lists: React.FC<Props> = ({ darkMode, setDarkMode }): JSX.Element => {
 										title={listTitle}
 										author={authorUsername}
 										description={listDescription}
-										setModalProps={setModalProps}
 										darkMode={darkMode}
 										key={i}
 									/>
@@ -101,7 +99,6 @@ const Lists: React.FC<Props> = ({ darkMode, setDarkMode }): JSX.Element => {
 						<div className="flex flex-wrap items-center justify-evenly sm:flex-row md:basis-2">
 							{[0, 1, 2, 3, 4].map(() => (
 								<ListCard
-									setModalProps={setModalProps}
 									darkMode={darkMode}
 								/>
 							))}
@@ -121,7 +118,6 @@ interface LCProps {
 	title?: string;
 	author?: string;
 	description?: string;
-	setModalProps: React.Dispatch<React.SetStateAction<React.ReactNode>>;
 	darkMode: boolean;
 }
 
@@ -130,9 +126,9 @@ const ListCard: React.FC<LCProps> = ({
 	title = "Title",
 	author = "Author",
 	description = "Description",
-	setModalProps,
 	darkMode,
 }): JSX.Element => {
+	const [modalProps, setModalProps] = useState<React.ReactNode | null>(null);
 	return (
 		<div className="flex flex-col w-full max-w-xs p-4 m-5 bg-white rounded-lg shadow-md max-h-96 dark:bg-gray-800 gap-y-2">
 			<title className="text-2xl font-bold dark:text-white line-clamp-1 d">
@@ -145,7 +141,8 @@ const ListCard: React.FC<LCProps> = ({
 			<Options
 				editable
 				shareable
-				moreInfo
+                deletable
+				listInfo
 				darkMode={darkMode}
 				listId={listId}
 			/>
@@ -157,7 +154,8 @@ interface OptionsProps {
 	listId: string;
 	editable: boolean;
 	shareable: boolean;
-	moreInfo: boolean;
+    deletable: boolean;
+	listInfo: boolean;
 	darkMode: boolean;
 }
 
@@ -165,7 +163,8 @@ const Options: React.FC<OptionsProps> = ({
 	listId,
 	editable,
 	shareable,
-	moreInfo,
+    deletable,
+	listInfo,
 	darkMode,
 }): JSX.Element => {
 	const navigate = useNavigate();
@@ -237,13 +236,42 @@ const Options: React.FC<OptionsProps> = ({
 							}}
 						/>
 					)}
-					{moreInfo && (
+					{listInfo && (
 						<OptionButton
 							icon={<FaEllipsisH color={"white"} />}
 							title="more info"
 							onClick={() => setOpen(true)}
 						/>
 					)}
+                    {deletable && (
+                        <OptionButton
+                            icon={<FaTrash color={"white"} />}
+                            title="delete list"
+                            onClick={() => {
+                                setTitle("Delete");
+                                setContent(
+                                    <div className='flex flex-col items-center justify-center w-full p-3'>
+                                        <p className="text-xl text-white font-semibold">Are you sure you want to delete this list?</p>
+                                        <div className='w-full flex justify-evenly'>
+                                            <div
+                                                role='button'
+                                                onClick={() => {}}
+                                            >
+                                                Cancel
+                                            </div>
+                                            <div 
+                                                role='button'
+                                                onClick={() => {}}
+                                            >
+                                                Confirm
+                                            </div>
+                                        </div>
+                                    </div>
+                                )
+                                setOpen(true)
+                            }}
+                        />
+        			)}
 				</div>
 				<OptionButton icon={<MdQuiz color={"white"} />} title="quiz" />
 			</div>

@@ -51,7 +51,7 @@ const Modal: React.FC<Props> = ({
 						{title && (
 							<div>
 								<strong className="text-2xl font-bold text-gray-800 dark:text-gray-100">
-									Select a definition
+                                    {title}
 								</strong>
 							</div>
 						)}
