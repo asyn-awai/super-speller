@@ -6,7 +6,14 @@ import { FaPlus, FaShare, FaEdit, FaEllipsisH, FaTrash } from "react-icons/fa";
 import { MdQuiz } from "react-icons/md";
 import Modal from "../../components/Modal";
 import { enableBodyScroll, disableBodyScroll } from "body-scroll-lock";
-import { getDocs, where, query, collection } from "firebase/firestore";
+import {
+	getDocs,
+	where,
+	query,
+	collection,
+	deleteDoc,
+	doc,
+} from "firebase/firestore";
 
 interface ListDataItem {
 	authorUsername: string;
@@ -58,7 +65,7 @@ const Lists: React.FC<Props> = ({ darkMode, setDarkMode }): JSX.Element => {
 						</div>
 						<div>
 							<div
-								className="w-36 h-10 flex items-center justify-center rounded-lg bg-blue-500 hover:bg-blue-600 cursor-pointer"
+								className="w-36 h-10 btn"
 								onClick={() => navigate("/lists/create")}
 							>
 								<p className="font-bold text-xl mr-3 text-white">
@@ -82,6 +89,8 @@ const Lists: React.FC<Props> = ({ darkMode, setDarkMode }): JSX.Element => {
 								) => (
 									<ListCard
 										listId={listId}
+										userListData={userListData}
+										setUserListData={setUserListData}
 										title={listTitle}
 										author={authorUsername}
 										description={listDescription}
@@ -100,6 +109,7 @@ const Lists: React.FC<Props> = ({ darkMode, setDarkMode }): JSX.Element => {
 							{[0, 1, 2, 3, 4].map(() => (
 								<ListCard
 									darkMode={darkMode}
+									setUserListData={setUserListData}
 								/>
 							))}
 						</div>
@@ -115,6 +125,8 @@ export default Lists;
 
 interface LCProps {
 	listId?: string;
+	userListData?: ListDataItem[];
+	setUserListData: React.Dispatch<React.SetStateAction<ListDataItem[]>>;
 	title?: string;
 	author?: string;
 	description?: string;
@@ -123,6 +135,8 @@ interface LCProps {
 
 const ListCard: React.FC<LCProps> = ({
 	listId = "123",
+	userListData = [],
+	setUserListData,
 	title = "Title",
 	author = "Author",
 	description = "Description",
@@ -141,10 +155,12 @@ const ListCard: React.FC<LCProps> = ({
 			<Options
 				editable
 				shareable
-                deletable
+				deletable
 				listInfo
 				darkMode={darkMode}
 				listId={listId}
+				userListData={userListData}
+				setUserListData={setUserListData}
 			/>
 		</div>
 	);
@@ -152,18 +168,22 @@ const ListCard: React.FC<LCProps> = ({
 
 interface OptionsProps {
 	listId: string;
+	userListData: ListDataItem[];
+	setUserListData: React.Dispatch<React.SetStateAction<ListDataItem[]>>;
 	editable: boolean;
 	shareable: boolean;
-    deletable: boolean;
+	deletable: boolean;
 	listInfo: boolean;
 	darkMode: boolean;
 }
 
 const Options: React.FC<OptionsProps> = ({
 	listId,
+	userListData,
+	setUserListData,
 	editable,
 	shareable,
-    deletable,
+	deletable,
 	listInfo,
 	darkMode,
 }): JSX.Element => {
@@ -183,6 +203,13 @@ const Options: React.FC<OptionsProps> = ({
 			</button>
 		);
 	};
+	const deleteList = async () => {
+		const listToDelete = await getDocs(
+			query(collection(db, "lists"), where("listId", "==", listId))
+		);
+		await deleteDoc(doc(db, "lists", listToDelete.docs[0].id));
+		setUserListData(userListData.filter(list => list.listId !== listId));
+	};
 	const [open, setOpen] = useState(false);
 	useEffect(() => {
 		const root = document.getElementById("root");
@@ -201,6 +228,7 @@ const Options: React.FC<OptionsProps> = ({
 				open={open}
 				setOpen={setOpen}
 				darkMode={darkMode}
+				dimensions={{ width: "30%" }}
 				title={title}
 			>
 				{content}
@@ -243,35 +271,47 @@ const Options: React.FC<OptionsProps> = ({
 							onClick={() => setOpen(true)}
 						/>
 					)}
-                    {deletable && (
-                        <OptionButton
-                            icon={<FaTrash color={"white"} />}
-                            title="delete list"
-                            onClick={() => {
-                                setTitle("Delete");
-                                setContent(
-                                    <div className='flex flex-col items-center justify-center w-full p-3'>
-                                        <p className="text-xl text-white font-semibold">Are you sure you want to delete this list?</p>
-                                        <div className='w-full flex justify-evenly'>
-                                            <div
-                                                role='button'
-                                                onClick={() => {}}
-                                            >
-                                                Cancel
-                                            </div>
-                                            <div 
-                                                role='button'
-                                                onClick={() => {}}
-                                            >
-                                                Confirm
-                                            </div>
-                                        </div>
-                                    </div>
-                                )
-                                setOpen(true)
-                            }}
-                        />
-        			)}
+					{deletable && (
+						<OptionButton
+							icon={<FaTrash color={"white"} />}
+							title="delete list"
+							onClick={() => {
+								setTitle("Delete");
+								setContent(
+									<div className="flex flex-col items-center justify-center w-full p-3 mb-5 gap-5">
+										<p className="text-center text-xl text-white font-semibold">
+											Are you sure you want to delete this
+											list?
+										</p>
+										<div className="w-full flex justify-evenly">
+											<div
+												className="btn p-3"
+												role="button"
+												onClick={() => setOpen(false)}
+											>
+												<p className="btn-text">
+													Cancel
+												</p>
+											</div>
+											<div
+												className="btn p-3"
+												role="button"
+												onClick={() => {
+													deleteList();
+													setOpen(false);
+												}}
+											>
+												<p className="btn-text">
+													Confirm
+												</p>
+											</div>
+										</div>
+									</div>
+								);
+								setOpen(true);
+							}}
+						/>
+					)}
 				</div>
 				<OptionButton icon={<MdQuiz color={"white"} />} title="quiz" />
 			</div>

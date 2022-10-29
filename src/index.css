@@ -11,6 +11,13 @@
 /* #root {
     max-height: 100vh;
 } */
+.btn {
+    @apply flex items-center justify-center rounded-lg bg-blue-500 hover:bg-blue-600 cursor-pointer 
+}
+
+.btn-text {
+    @apply font-bold text-xl text-white
+}
 
 .input-form {
 	@apply text-gray-900 text-sm rounded-lg block w-full pl-10 p-2.5 transition-all focus:ring-blue-500;

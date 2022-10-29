@@ -87,11 +87,9 @@ const Create: React.FC<Props> = ({ darkMode, setDarkMode }): JSX.Element => {
 		)
 			return;
 		try {
-            const author = JSON.parse(
-                localStorage.getItem("authUser") ?? "{}"
-            );
-            if (!author.password || !author.email || !author.username)
-                navigate("/signin");
+			const author = JSON.parse(localStorage.getItem("authUser") ?? "{}");
+			if (!author.password || !author.email || !author.username)
+				navigate("/signin");
 			if (!isEditing) {
 				await addDoc(collection(db, "lists"), {
 					authorUsername: author.username,
@@ -101,21 +99,21 @@ const Create: React.FC<Props> = ({ darkMode, setDarkMode }): JSX.Element => {
 					listContent: wordsList,
 				});
 			} else {
-                //update the doc with the same listId
-                const listId = location.pathname.split("/").pop();
-                const listData = await getDocs(
-                    query(
-                        collection(db, "lists"),
-                        where("listId", "==", listId),
-                        where("authorUsername", "==", author.username)
-                    )
-                );
-                await updateDoc(doc(db, "lists", listData.docs[0].id), {
-                    listTitle,
-                    listDescription,
-                    listContent: wordsList,
-                });
-            }
+				//update the doc with the same listId
+				const listId = location.pathname.split("/").pop();
+				const listData = await getDocs(
+					query(
+						collection(db, "lists"),
+						where("listId", "==", listId),
+						where("authorUsername", "==", author.username)
+					)
+				);
+				await updateDoc(doc(db, "lists", listData.docs[0].id), {
+					listTitle,
+					listDescription,
+					listContent: wordsList,
+				});
+			}
 			navigate("/lists");
 		} catch (err) {
 			alert(err);
@@ -362,6 +360,7 @@ const AddWordCard: React.FC<{
 				open={modalShow}
 				setOpen={setModalShow}
 				darkMode={darkMode}
+				dimensions={{ width: "60%" }}
 				title="Select a definition"
 			>
 				<div className="w-auto max-h-96 overflow-y-scroll p-3">

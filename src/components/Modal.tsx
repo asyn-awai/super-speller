@@ -11,6 +11,10 @@ interface Props {
 	open: boolean;
 	setOpen: StateSetter<boolean>;
 	darkMode: boolean;
+	dimensions?: {
+		width?: string;
+		height?: string;
+	};
 }
 
 const Modal: React.FC<Props> = ({
@@ -19,6 +23,10 @@ const Modal: React.FC<Props> = ({
 	open,
 	setOpen,
 	darkMode,
+    dimensions = {
+        width: "auto",
+        height: "auto"
+    },
 }): JSX.Element => {
 	return (
 		<MicroModal
@@ -33,8 +41,8 @@ const Modal: React.FC<Props> = ({
 						backgroundColor: `${darkMode ? "#111827" : "#fff"}`,
 						maxWidth: "none",
 						maxHeight: "60%",
-						width: "60%",
-						height: "auto",
+						width: dimensions.width,
+						height: dimensions.height,
 						overflow: "hidden",
 					},
 				},
@@ -51,7 +59,7 @@ const Modal: React.FC<Props> = ({
 						{title && (
 							<div>
 								<strong className="text-2xl font-bold text-gray-800 dark:text-gray-100">
-                                    {title}
+									{title}
 								</strong>
 							</div>
 						)}
