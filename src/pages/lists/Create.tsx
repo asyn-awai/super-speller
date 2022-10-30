@@ -10,7 +10,6 @@ import {
 	addDoc,
 	collection,
 	doc,
-	getDoc,
 	getDocs,
 	query,
 	updateDoc,
@@ -21,6 +20,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 interface Word {
 	word: string;
 	definition: string;
+	example: string | null;
 }
 
 interface WordInfo {
@@ -313,6 +313,23 @@ const AddWordCard: React.FC<{
 		return { title: "An Error Occured" } as DictionaryAPIResponse;
 	};
 
+	const fetchExample = async (word: string) => {
+		const wordInfo = await fetchWordInfo(word);
+		console.log(wordInfo);
+		if (!Array.isArray(wordInfo)) return;
+		const examples: string[] = [];
+		for (const word of wordInfo) {
+			for (const meaning of word.meanings) {
+				for (const definition of meaning.definitions) {
+					if (definition.example) {
+						examples.push(definition.example);
+					}
+				}
+			}
+		}
+		return examples?.sort(() => Math.random() - 0.5)[0];
+	};
+
 	const handleGetDef = async () => {
 		if (defInputRef.current === null) {
 			alert("error");
@@ -328,7 +345,11 @@ const AddWordCard: React.FC<{
 		for (const meaning of data[0].meanings) {
 			const partOfSpeech = meaning.partOfSpeech;
 			for (const { definition, example = null } of meaning.definitions) {
-				resInfo.push({ definition, example, partOfSpeech });
+				resInfo.push({
+					definition,
+					example,
+					partOfSpeech,
+				});
 			}
 		}
 		if (resInfo.length > 1) {
@@ -337,21 +358,29 @@ const AddWordCard: React.FC<{
 		}
 	};
 
-	const handleAddWord = () => {
+	const handleAddWord = async () => {
 		if (
 			wordInput.length === 0 ||
 			wordsList.some(x => x.word === wordInput.toLowerCase())
 		)
 			return;
+		const example = (await fetchExample(wordInput.toLowerCase())) ?? null;
 		setWordsList(prev => [
 			...prev,
-			{ word: wordInput.toLowerCase(), definition: defInput },
+			{
+				word: wordInput.toLowerCase(),
+				definition: defInput,
+				example: example,
+			},
 		]);
 		setWordQueryInfo([]);
-		if (wordInputRef.current != null) wordInputRef.current.value = "";
-		if (defInputRef.current != null) defInputRef.current.value = "";
+		if (wordInputRef.current === null) return;
+		if (defInputRef.current === null) return;
 		setWordInput("");
 		setDefInput("");
+		wordInputRef.current.value = "";
+		defInputRef.current.value = "";
+		wordInputRef.current.focus();
 	};
 
 	return (

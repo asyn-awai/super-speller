@@ -33,6 +33,7 @@ interface Props {
 
 const Lists: React.FC<Props> = ({ darkMode, setDarkMode }): JSX.Element => {
 	const navigate = useNavigate();
+	const [loading, setLoading] = useState(true);
 	const [userListData, setUserListData] = useState<ListDataItem[]>([]);
 	useEffect(() => {
 		(async () => {
@@ -51,6 +52,7 @@ const Lists: React.FC<Props> = ({ darkMode, setDarkMode }): JSX.Element => {
 			setUserListData(
 				querySnapshot.docs.map(doc => doc.data()) as ListDataItem[]
 			);
+			setLoading(false);
 		})();
 	}, []);
 	return (
@@ -59,61 +61,73 @@ const Lists: React.FC<Props> = ({ darkMode, setDarkMode }): JSX.Element => {
 				{/* <Modal open={true} onClose={() => {}} center /> */}
 				<br />
 				<div className="min-h-screen">
-					<div className="flex flex-col h-auto gap-5 mx-2 mb-10">
-						<div className="flex items-center justify-start w-full h-36">
-							<h1 className="text-2xl font-bold">Your Lists</h1>
-						</div>
-						<div>
-							<div
-								className="w-36 h-10 btn"
-								onClick={() => navigate("/lists/create")}
-							>
-								<p className="font-bold text-xl mr-3 text-white">
-									New List
-								</p>
-								<span>
-									<FaPlus size={20} color="fff" />
-								</span>
+					{!loading && (
+						<>
+							<div className="flex flex-col h-auto gap-5 mx-2 mb-10">
+								<div className="flex items-center justify-start w-full h-36">
+									<h1 className="text-2xl font-bold">
+										Your Lists
+									</h1>
+								</div>
+								<div>
+									<div
+										className="w-36 h-10 btn"
+										onClick={() =>
+											navigate("/lists/create")
+										}
+									>
+										<p className="font-bold text-xl mr-3 text-white">
+											New List
+										</p>
+										<span>
+											<FaPlus size={20} color="fff" />
+										</span>
+									</div>
+								</div>
+								<div className="flex flex-wrap items-center justify-evenly sm:basis-1/2">
+									{userListData.map(
+										(
+											{
+												listId,
+												listTitle,
+												authorUsername,
+												listDescription,
+											},
+											i
+										) => (
+											<ListCard
+												listId={listId}
+												userListData={userListData}
+												setUserListData={
+													setUserListData
+												}
+												title={listTitle}
+												author={authorUsername}
+												description={listDescription}
+												darkMode={darkMode}
+												key={i}
+											/>
+										)
+									)}
+								</div>
 							</div>
-						</div>
-						<div className="flex flex-wrap items-center justify-evenly sm:basis-1/2">
-							{userListData.map(
-								(
-									{
-										listId,
-										listTitle,
-										authorUsername,
-										listDescription,
-									},
-									i
-								) => (
-									<ListCard
-										listId={listId}
-										userListData={userListData}
-										setUserListData={setUserListData}
-										title={listTitle}
-										author={authorUsername}
-										description={listDescription}
-										darkMode={darkMode}
-										key={i}
-									/>
-								)
-							)}
-						</div>
-					</div>
-					<div className="flex flex-col h-auto gap-5 mx-2 mb-10">
-						<div className="flex items-center justify-start w-full h-36">
-							<h1 className="text-2xl font-bold">Saved Lists</h1>
-						</div>
-						<div className="flex flex-wrap items-center justify-evenly sm:flex-row md:basis-2">
-							{[0, 1, 2, 3, 4].map(() => (
-								<ListCard
-									darkMode={darkMode}
-									setUserListData={setUserListData}
-								/>
-							))}
-						</div>
-					</div>
+							<div className="flex flex-col h-auto gap-5 mx-2 mb-10">
+								<div className="flex items-center justify-start w-full h-36">
+									<h1 className="text-2xl font-bold">
+										Saved Lists
+									</h1>
+								</div>
+								<div className="flex flex-wrap items-center justify-evenly sm:flex-row md:basis-2">
+									{[0, 1, 2, 3, 4].map(() => (
+										<ListCard
+											darkMode={darkMode}
+											setUserListData={setUserListData}
+										/>
+									))}
+								</div>
+							</div>
+						</>
+					)}
 				</div>
 				<br />
 			</Layout>
@@ -313,7 +327,13 @@ const Options: React.FC<OptionsProps> = ({
 						/>
 					)}
 				</div>
-				<OptionButton icon={<MdQuiz color={"white"} />} title="quiz" />
+				<OptionButton
+					icon={<MdQuiz color={"white"} />}
+					title="quiz"
+					onClick={() => {
+						navigate(`/quiz/${listId}`);
+					}}
+				/>
 			</div>
 		</>
 	);
