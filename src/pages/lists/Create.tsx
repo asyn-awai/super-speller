@@ -54,6 +54,8 @@ const Create: React.FC<Props> = ({ darkMode, setDarkMode }): JSX.Element => {
 			const authUser = JSON.parse(
 				localStorage.getItem("authUser") ?? "{}"
 			);
+			if (!authUser.password || !authUser.email || !authUser.username)
+				navigate("/signin");
 			const listId = location.pathname.split("/").pop();
 			if (listId === "create") return;
 			setIsEditing(true);
@@ -93,6 +95,7 @@ const Create: React.FC<Props> = ({ darkMode, setDarkMode }): JSX.Element => {
 			if (!isEditing) {
 				await addDoc(collection(db, "lists"), {
 					authorUsername: author.username,
+					authorEmail: author.email,
 					listId: nanoid(),
 					listTitle,
 					listDescription,

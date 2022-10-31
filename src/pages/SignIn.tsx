@@ -6,6 +6,7 @@ import Fields from "../components/SignIn/Fields";
 import db from "../firebase";
 import Layout from "../components/Layout";
 import Modal from "../components/Modal";
+import Spinner from "../components/Spinner";
 
 interface User {
 	username: string;
@@ -70,6 +71,7 @@ const SignIn: React.FC<Props> = ({
 					username,
 					email,
 					password,
+					savedLists: [],
 				});
 			} else {
 				//signing in
@@ -82,11 +84,14 @@ const SignIn: React.FC<Props> = ({
 					username: userSearch.docs[0]?.data()?.username ?? username,
 					email,
 					password,
+					savedLists: [],
 				})
 			);
 			const authUser = JSON.parse(
 				localStorage.getItem("authUser") ?? "{}"
 			);
+			if (!authUser.password || !authUser.email || !authUser.username)
+				navigate("/signin");
 			await addDoc(collection(db, "mastery"), {
 				username: authUser.username,
 				email: authUser.email,
@@ -215,7 +220,7 @@ const SignIn: React.FC<Props> = ({
 				</Layout>
 			) : (
 				<div className="grid w-screen h-screen d place-items-center">
-					{/*put spinner in the middle of the div*/}
+					<Spinner />
 				</div>
 			)}
 		</>

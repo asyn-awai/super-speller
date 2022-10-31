@@ -2,7 +2,14 @@ import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import db from "../../firebase";
 import Layout from "../../components/Layout";
-import { FaPlus, FaShare, FaEdit, FaEllipsisH, FaTrash } from "react-icons/fa";
+import {
+	FaPlus,
+	FaShare,
+	FaEdit,
+	FaEllipsisH,
+	FaTrash,
+	FaCloudDownloadAlt,
+} from "react-icons/fa";
 import { MdQuiz } from "react-icons/md";
 import Modal from "../../components/Modal";
 import { enableBodyScroll, disableBodyScroll } from "body-scroll-lock";
@@ -14,6 +21,8 @@ import {
 	deleteDoc,
 	doc,
 } from "firebase/firestore";
+import Spinner from "../../components/Spinner";
+import { nanoid } from "nanoid";
 
 interface ListDataItem {
 	authorUsername: string;
@@ -34,7 +43,14 @@ interface Props {
 const Lists: React.FC<Props> = ({ darkMode, setDarkMode }): JSX.Element => {
 	const navigate = useNavigate();
 	const [loading, setLoading] = useState(true);
+	// const [openModal, setOpenModal] = useState(false);
+	const [allLists, setAllLists] = useState<ListDataItem[]>([]);
+	const [matchingLists, setMatchingLists] = useState<ListDataItem[]>([]);
+	const searchInputRef = useRef<HTMLInputElement>(null);
 	const [userListData, setUserListData] = useState<ListDataItem[]>([]);
+	const [savedUserListData, setSavedUserListData] = useState<ListDataItem[]>(
+		[]
+	);
 	useEffect(() => {
 		(async () => {
 			const authUser = JSON.parse(
@@ -42,30 +58,87 @@ const Lists: React.FC<Props> = ({ darkMode, setDarkMode }): JSX.Element => {
 			);
 			if (!authUser.password || !authUser.email || !authUser.username)
 				navigate("/signin");
-			console.log(authUser.username);
 			const querySnapshot = await getDocs(
 				query(
 					collection(db, "lists"),
-					where("authorUsername", "==", authUser.username)
+					where("authorUsername", "==", authUser.username),
+					where("authorEmail", "==", authUser.email)
 				)
 			);
 			setUserListData(
 				querySnapshot.docs.map(doc => doc.data()) as ListDataItem[]
 			);
+			const userSavedLists = (
+				await getDocs(
+					query(
+						collection(db, "user-data"),
+						where("username", "==", authUser.username),
+						where("email", "==", authUser.email)
+					)
+				)
+			).docs
+				.map(doc => doc.data().savedLists)
+				.flat();
+			for (const doc of userSavedLists) {
+				const docQuery = await getDocs(
+					query(
+						collection(db, "lists"),
+						where("listId", "==", doc.listId)
+					)
+				);
+				setSavedUserListData(prev => [
+					...prev,
+					docQuery.docs[0].data() as ListDataItem,
+				]);
+			}
+			const allLists = (await getDocs(collection(db, "lists"))).docs
+				.map(doc => doc.data())
+				.filter(list => list.authorUsername !== authUser.username)
+				.filter(
+					list =>
+						!userSavedLists.some(
+							savedList => savedList.listId === list.listId
+						)
+				);
+			setAllLists(allLists as ListDataItem[]);
 			setLoading(false);
 		})();
 	}, []);
+	const handleInputChange = (search: string) => {
+		if (search === "") {
+			setMatchingLists([]);
+			return;
+		}
+		setMatchingLists(
+			allLists
+				.filter(list =>
+					new RegExp(`^${search}`, "i").test(list.listTitle)
+				)
+				.filter(
+					list =>
+						!userListData.some(
+							list2 => list2.listId === list.listId
+						)
+				)
+		);
+	};
 	return (
 		<>
 			<Layout darkMode={darkMode} setDarkMode={setDarkMode} sideNav>
-				{/* <Modal open={true} onClose={() => {}} center /> */}
-				<br />
+				{/* <Modal
+					title={"Import List"}
+					open={openModal}
+					setOpen={setOpenModal}
+					darkMode={darkMode}
+				>
+                    
+                </Modal> */}
 				<div className="min-h-screen">
-					{!loading && (
+					{!loading ? (
 						<>
 							<div className="flex flex-col h-auto gap-5 mx-2 mb-10">
 								<div className="flex items-center justify-start w-full h-36">
-									<h1 className="text-2xl font-bold">
+									<h1 className="text-6xl font-bold">
 										Your Lists
 									</h1>
 								</div>
@@ -76,12 +149,16 @@ const Lists: React.FC<Props> = ({ darkMode, setDarkMode }): JSX.Element => {
 											navigate("/lists/create")
 										}
 									>
-										<p className="font-bold text-xl mr-3 text-white">
+										<span>
+											<FaPlus
+												size={20}
+												color="fff"
+												className="mr-3"
+											/>
+										</span>
+										<p className="font-bold text-xl text-white">
 											New List
 										</p>
-										<span>
-											<FaPlus size={20} color="fff" />
-										</span>
 									</div>
 								</div>
 								<div className="flex flex-wrap items-center justify-evenly sm:basis-1/2">
@@ -114,19 +191,80 @@ const Lists: React.FC<Props> = ({ darkMode, setDarkMode }): JSX.Element => {
 							<div className="flex flex-col h-auto gap-5 mx-2 mb-10">
 								<div className="flex items-center justify-start w-full h-36">
 									<h1 className="text-2xl font-bold">
-										Saved Lists
+										Saved / Imported Lists
 									</h1>
 								</div>
+								{/* <div
+									className="w-40 h-10 btn"
+									onClick={() => setOpenModal(true)}
+								>
+									<span>
+										<FaCloudDownloadAlt
+											size={20}
+											color="fff"
+											className="mr-3"
+										/>
+									</span>
+									<p className="font-bold text-xl text-white">
+										Import List
+									</p>
+								</div> */}
 								<div className="flex flex-wrap items-center justify-evenly sm:flex-row md:basis-2">
-									{[0, 1, 2, 3, 4].map(() => (
+									{savedUserListData.map(d => (
 										<ListCard
-											darkMode={darkMode}
+											listId={d.listId}
+											userListData={userListData}
 											setUserListData={setUserListData}
+											title={d.listTitle}
+											author={d.authorUsername}
+											description={d.listDescription}
+											darkMode={darkMode}
+											key={d.listId}
+										/>
+									))}
+								</div>
+							</div>
+							<div className="flex flex-col h-auto gap-5 mx-2 mb-10">
+								<div className="flex items-center justify-start w-full h-36">
+									<h1 className="text-2xl font-bold">
+										Discover
+									</h1>
+								</div>
+								<div className="w-3/12 flex gap-5 flex-col">
+									<label htmlFor="list-search">
+										Search Lists
+									</label>
+									<input
+										id="list-search"
+										className="input-form-create w-10"
+										ref={searchInputRef}
+										onChange={e =>
+											handleInputChange(e.target.value)
+										}
+									></input>
+								</div>
+								<div className="flex flex-wrap items-center justify-evenly sm:flex-row md:basis-2">
+									{((searchInputRef.current?.value.length ??
+										0) === 0
+										? allLists
+										: matchingLists
+									).map(d => (
+										<ListCard
+											listId={d.listId}
+											userListData={userListData}
+											setUserListData={setUserListData}
+											title={d.listTitle}
+											author={d.authorUsername}
+											description={d.listDescription}
+											darkMode={darkMode}
+											key={nanoid()}
 										/>
 									))}
 								</div>
 							</div>
 						</>
+					) : (
+						<Spinner />
 					)}
 				</div>
 				<br />

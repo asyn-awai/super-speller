@@ -38,7 +38,6 @@ const Quiz: React.FC<Props> = ({ darkMode, setDarkMode }) => {
 	const location = useLocation();
 	const [loading, setLoading] = useState(true);
 	const [quizStart, setQuizStart] = useState(false);
-	const listId = location.pathname.split("/").pop();
 	const [listTitle, setListTitle] = useState<string>();
 	const [listData, setListData] = useState<Word[]>([]);
 	// const [currentWord, setCurrentWord] = useState<Word>({} as Word);
@@ -56,7 +55,10 @@ const Quiz: React.FC<Props> = ({ darkMode, setDarkMode }) => {
 	};
 
 	useEffect(() => {
+		const listId = location.pathname.split("/").pop();
 		const authUser = JSON.parse(localStorage.getItem("authUser") ?? "{}");
+		if (!authUser.password || !authUser.email || !authUser.username)
+			navigate("/signin");
 		(async () => {
 			const listQuery = await getDocs(
 				query(

@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import { FaCircle } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import Layout from "../components/Layout";
+import Spinner from "../components/Spinner";
 import db from "../firebase";
 
 interface Word {
@@ -64,7 +65,7 @@ const Mastery: React.FC<Props> = ({ darkMode, setDarkMode }): JSX.Element => {
 						</div>
 					</div>
 				) : (
-					<></>
+					<Spinner />
 				)}
 			</div>
 		</Layout>

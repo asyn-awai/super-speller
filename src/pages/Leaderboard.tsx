@@ -5,6 +5,7 @@ import { FaTrophy } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import { addDoc, collection, getDocs, query, where } from "firebase/firestore";
 import db from "../firebase";
+import Spinner from "../components/Spinner";
 
 interface Props {
 	darkMode: boolean;
@@ -56,7 +57,7 @@ const Leaderboard: React.FC<Props> = ({
 				{!loading ? (
 					<div className="flex flex-col h-auto gap-5 mx-2 mb-10">
 						<div className="flex items-center justify-start w-full h-36">
-							<h1 className="text-2xl font-bold">Leaderboard</h1>
+							<h1 className="text-6xl font-bold">Leaderboard</h1>
 						</div>
 						<div className="w-full flex justify-center">
 							<div className="flex flex-col w-3/4">
@@ -67,7 +68,7 @@ const Leaderboard: React.FC<Props> = ({
 						</div>
 					</div>
 				) : (
-					<></>
+                    <Spinner />
 				)}
 			</div>
 		</Layout>
