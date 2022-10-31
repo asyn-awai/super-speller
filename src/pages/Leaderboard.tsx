@@ -1,15 +1,24 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { nanoid } from "nanoid";
 import Layout from "../components/Layout";
 import { FaTrophy } from "react-icons/fa";
+import { useNavigate } from "react-router-dom";
+import { addDoc, collection, getDocs, query, where } from "firebase/firestore";
+import db from "../firebase";
 
 interface Props {
 	darkMode: boolean;
 	setDarkMode: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
-interface IItem {
+interface LeaderboardItem {
 	rank: number;
+	username: string;
+	score: number;
+}
+
+interface User {
+	email: string;
 	username: string;
 	score: number;
 }
@@ -18,44 +27,48 @@ const Leaderboard: React.FC<Props> = ({
 	darkMode,
 	setDarkMode,
 }): JSX.Element => {
+	const navigate = useNavigate();
+	const [loading, setLoading] = useState(true);
+	const [users, setUsers] = useState<User[]>([]);
+	useEffect(() => {
+		(async () => {
+			const authUser = JSON.parse(
+				localStorage.getItem("authUser") ?? "{}"
+			);
+			if (!authUser.password || !authUser.email || !authUser.username)
+				navigate("/signin");
+			const querySnapshot = await getDocs(
+				query(collection(db, "scores"))
+			);
+			if (querySnapshot.docs.length === 0) return;
+			setUsers(
+				querySnapshot.docs
+					.map(doc => doc.data())
+					.sort((a, b) => b.score - a.score) as User[]
+			);
+			setLoading(false);
+		})();
+	}, []);
+
 	return (
 		<Layout darkMode={darkMode} setDarkMode={setDarkMode} sideNav>
 			<div className="min-h-screen">
-				<div className="flex flex-col h-auto gap-5 mx-2 mb-10">
-					<div className="flex items-center justify-start w-full h-36">
-						<h1 className="text-2xl font-bold">Leaderboard</h1>
-					</div>
-					<div className="w-full flex justify-center">
-						<div className="flex flex-col w-3/4">
-							<LeaderboardHeader />
-							<br />
-							<LeaderboardItems
-								items={[
-									{
-										rank: 1,
-										username: "Alex",
-										score: 100,
-									},
-									{
-										rank: 2,
-										username: "John",
-										score: 50,
-									},
-									{
-										rank: 3,
-										username: "Paul",
-										score: 50,
-									},
-									{
-										rank: 4,
-										username: "Four",
-										score: 50,
-									},
-								]}
-							/>
+				{!loading ? (
+					<div className="flex flex-col h-auto gap-5 mx-2 mb-10">
+						<div className="flex items-center justify-start w-full h-36">
+							<h1 className="text-2xl font-bold">Leaderboard</h1>
+						</div>
+						<div className="w-full flex justify-center">
+							<div className="flex flex-col w-3/4">
+								<LeaderboardHeader />
+								<br />
+								<LeaderboardItems users={users} />
+							</div>
 						</div>
 					</div>
-				</div>
+				) : (
+					<></>
+				)}
 			</div>
 		</Layout>
 	);
@@ -80,12 +93,9 @@ const LeaderboardHeader: React.FC = (): JSX.Element => {
 };
 
 const LeaderboardItems: React.FC<{
-	items: IItem[];
-}> = ({ items }): JSX.Element => {
-	const Item: React.FC<{ item: IItem; index: number }> = ({
-		item,
-		index,
-	}) => {
+	users: User[];
+}> = ({ users }): JSX.Element => {
+	const Item: React.FC<{ user: User; index: number }> = ({ user, index }) => {
 		const rankColors = {
 			1: "gold",
 			2: "silver",
@@ -96,19 +106,19 @@ const LeaderboardItems: React.FC<{
 				<div className="flex items-center gap-2 w-[25%]">
 					<FaTrophy
 						size={25}
-						color={rankColors[item.rank]}
+						color={rankColors[index + 1]}
 						style={{
 							visibility:
-								item.rank in rankColors ? "visible" : "hidden",
+								index + 1 in rankColors ? "visible" : "hidden",
 						}}
 					/>
-					<span className="text-lg font-bold">{item.rank}</span>
+					<span className="text-lg font-bold">{index + 1}</span>
 				</div>
 				<div className="flex justify-center w-[50%]">
-					<strong className="text-lg">{item.username}</strong>
+					<strong className="text-lg">{user.username}</strong>
 				</div>
 				<div className="flex justify-end w-[25%]">
-					<strong className="text-lg">{item.score}</strong>
+					<strong className="text-lg">{user.score}</strong>
 				</div>
 			</div>
 		);
@@ -116,8 +126,8 @@ const LeaderboardItems: React.FC<{
 
 	return (
 		<div className="flex flex-col w-full">
-			{items.map((item, index) => (
-				<Item item={item} index={index} key={nanoid()} />
+			{users.map((user, index) => (
+				<Item user={user} index={index} key={nanoid()} />
 			))}
 		</div>
 	);

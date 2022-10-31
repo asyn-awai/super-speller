@@ -1,11 +1,11 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { addDoc, collection, getDocs, query, where } from "firebase/firestore";
-import TopNav from "../components/TopNav";
 import Requirements from "../components/SignIn/Requirements";
 import Fields from "../components/SignIn/Fields";
 import db from "../firebase";
 import Layout from "../components/Layout";
+import Modal from "../components/Modal";
 
 interface User {
 	username: string;
@@ -31,6 +31,7 @@ const SignIn: React.FC<Props> = ({
 	 * false -> signing up
 	 */
 	const [isUser, setIsUser] = useState(false);
+	const [showModal, setShowModal] = useState(false);
 
 	const usernameField = useRef<HTMLInputElement>(null);
 	const emailField = useRef<HTMLInputElement>(null);
@@ -83,6 +84,19 @@ const SignIn: React.FC<Props> = ({
 					password,
 				})
 			);
+			const authUser = JSON.parse(
+				localStorage.getItem("authUser") ?? "{}"
+			);
+			await addDoc(collection(db, "mastery"), {
+				username: authUser.username,
+				email: authUser.email,
+				words: [],
+			});
+			await addDoc(collection(db, "scores"), {
+				username: authUser.username,
+				email: authUser.email,
+				score: 0,
+			});
 			navigate("/dashboard");
 		} catch (error) {
 			alert(error);

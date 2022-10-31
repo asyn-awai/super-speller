@@ -56,7 +56,7 @@ const TopNav: React.FC<Props> = ({
 						onClick={() => {
 							localStorage.getItem("authUser")
 								? navigate("/dashboard")
-								: navigate("/login");
+								: navigate("/signin");
 						}}
 					>
 						<div className="flex items-center justify-center">

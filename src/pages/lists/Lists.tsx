@@ -293,7 +293,7 @@ const Options: React.FC<OptionsProps> = ({
 								setTitle("Delete");
 								setContent(
 									<div className="flex flex-col items-center justify-center w-full p-3 mb-5 gap-5">
-										<p className="text-center text-xl text-white font-semibold">
+										<p className="text-center text-xl font-semibold text-gray-800 dark:text-gray-100">
 											Are you sure you want to delete this
 											list?
 										</p>

@@ -6,7 +6,7 @@ interface APIResponse {
 	phonetics: Phonetic[];
 	origin: string;
 	meanings: Meaning[];
-}[];
+}
 
 interface FailedAPIResponse {
 	title: string;

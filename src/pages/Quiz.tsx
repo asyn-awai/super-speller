@@ -1,5 +1,13 @@
 import React, { useEffect, useState, useRef } from "react";
-import { collection, getDocs, query, where } from "firebase/firestore";
+import { Navigate, useLocation, useNavigate } from "react-router-dom";
+import {
+	collection,
+	doc,
+	getDocs,
+	query,
+	updateDoc,
+	where,
+} from "firebase/firestore";
 import db from "../firebase";
 import {
 	FaArrowLeft,
@@ -9,7 +17,6 @@ import {
 	FaVolumeUp,
 	FaEdit,
 } from "react-icons/fa";
-import { Navigate, useLocation, useNavigate } from "react-router-dom";
 import Layout from "../components/Layout";
 
 interface Word {
@@ -298,15 +305,100 @@ const ReviewSection: React.FC<{
 	showResults,
 	setShowResults,
 }): JSX.Element => {
+	const navigate = useNavigate();
 	const handleSubmit = () => {
 		setShowResults(true);
+	};
+	const scoreMultiplier = (word: string) => {
+		if (word.length >= 10) return 1.25;
+		if (word.length >= 8) return 1;
+		if (word.length >= 6) return 0.75;
+		if (word.length >= 4) return 0.5;
+		if (word.length >= 2) return 0.25;
+		return 0.1;
+	};
+	const updateUserStats = async () => {
+		const authUser = JSON.parse(localStorage.getItem("authUser") ?? "{}");
+		if (!authUser.password || !authUser.email || !authUser.username)
+			navigate("/signin");
+		const masteryQueryDocs = await getDocs(
+			query(
+				collection(db, "mastery"),
+				where("email", "==", authUser.email)
+			)
+		);
+		const scoresQueryDocs = await getDocs(
+			query(
+				collection(db, "scores"),
+				where("email", "==", authUser.email)
+			)
+		);
+		const masteryQueryData = masteryQueryDocs.docs
+			.map(doc => doc.data().words)
+			.flat();
+		const attemptedWords = Object.entries(wordsToInputs).reduce(
+			(a, [word, attempted]) => {
+				const existingWord = masteryQueryData.find(
+					w => w.word === word
+				);
+				if (word === attempted) {
+					a.push({
+						word,
+						level: Math.min(
+							100,
+							existingWord ? existingWord.level + 20 : 20
+						),
+					});
+				} else {
+					a.push({
+						word,
+						level: Math.max(
+							0,
+							existingWord ? existingWord.level - 10 : 0
+						),
+					});
+				}
+				return a;
+			},
+			[] as { level: number; word: string }[]
+		);
+		await updateDoc(doc(db, "mastery", masteryQueryDocs.docs[0].id), {
+			email: authUser.email,
+			username: authUser.username,
+			words: [
+				...masteryQueryData.filter(
+					word => !attemptedWords.find(w => word.word === w.word)
+				),
+				...attemptedWords,
+			],
+		});
+		console.log(attemptedWords.map(x => x.level));
+		await updateDoc(doc(db, "scores", scoresQueryDocs.docs[0].id), {
+			email: authUser.email,
+			username: authUser.username,
+			score:
+				masteryQueryData
+					.filter(x => !attemptedWords.find(w => w.word === x.word))
+					.reduce((a, b) => a + b.level, 0) +
+				attemptedWords.reduce(
+					(a, b) => a + b.level * scoreMultiplier(b.word),
+					0
+				),
+		});
 	};
 	return (
 		<>
 			<h1 className="text-center font-bold text-xl mb-8">
 				Great job! Click to edit or submit when you're done
 			</h1>
-			<div role="button" className="btn mb-8 p-3" onClick={handleSubmit}>
+			<div
+				role="button"
+				className="btn mb-8 p-3"
+				onClick={() => {
+					updateUserStats();
+					handleSubmit();
+				}}
+			>
 				<FaCheck size={25} color="white" className="mr-3" />
 				<p className="btn-text">Submit</p>
 			</div>
@@ -389,7 +481,11 @@ const WordCard: React.FC<{
 	showDiff = false,
 }): JSX.Element => {
 	return (
-		<div className="pl-14 pr-8 h-16 flex items-center rounded-lg transition-colors dark:bg-gray-700 bg-gray-100 w-full p-2 gap-5 mb-4 cursor-pointer dark:border-none border">
+		<div
+			className={`pl-14 pr-8 h-16 flex items-center rounded-lg transition-colors dark:bg-gray-700 bg-gray-100 w-full p-2 gap-5 mb-4 dark:border-none border ${
+				!showDiff ? "cursor-pointer" : ""
+			}`}
+		>
 			<h2 className="w-8 text-xl">{`${index + 1}.`}</h2>
 			<div className="flex justify-between items-center w-full">
 				<div>
