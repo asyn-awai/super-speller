@@ -77,7 +77,7 @@ const Quiz: React.FC<Props> = ({ darkMode, setDarkMode }) => {
 				setListData(
 					listQuery.docs[0]
 						.data()
-						.listContent.sort(() => 0.5 - Math.random())
+						.listContent.sort(() => Math.random() - 0.5)
 				);
 			}
 			for (const word of listQuery.docs[0].data().listContent) {
