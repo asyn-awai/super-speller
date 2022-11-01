@@ -132,6 +132,7 @@ const LevelIndicator: React.FC<{ level: number }> = ({
 		<div key={nanoid()} className="flex items-center gap-3">
 			{[...Array(5)].map((_, i) => (
 				<FaCircle
+					key={nanoid()}
 					size={(i + 4) ** 1.5 + 5}
 					color={
 						i < getPercentage()

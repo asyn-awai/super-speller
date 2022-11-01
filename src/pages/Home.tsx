@@ -15,15 +15,10 @@ interface Props {
 const Home: React.FC<Props> = ({ darkMode, setDarkMode }): JSX.Element => {
 	return (
 		<Layout
-			navbarProps={[
-				{ name: "Home", url: "/" },
-				{ name: "About", url: "/about" },
-				{ name: "Contact", url: "/contact" },
-			]}
+			navbarProps={[{ name: "Home", url: "/" }]}
 			darkMode={darkMode}
 			setDarkMode={setDarkMode}
 			topNav
-			footer
 		>
 			<Landing />
 			<GetStarted />
@@ -46,11 +41,8 @@ const Landing: React.FC = (): JSX.Element => {
 					</p>
 					<br />
 					<p className="text-xl font-bold text-center xl:text-left d">
-						Lorem ipsum dolor sit amet consectetur adipisicing elit.
-						Fuga itaque explicabo corporis, perspiciatis quae
-						exercitationem nostrum sit ullam voluptates natus optio
-						officia eaque quaerat, minima commodi maxime nesciunt ab
-						architecto!
+						Inject a little bit of fun into your spelling practice
+						with our unique, gamified approach to learning.
 					</p>
 				</div>
 				<div className="flex items-center justify-center w-[80%] md:w-[40%] h-full mb-10 md:mb-0">

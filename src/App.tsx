@@ -35,19 +35,17 @@ function App() {
 		localStorage.getItem("darkMode") === "true"
 	);
 
-	const [authUser, setAuthUser] = useState(null);
-
-	useEffect(() => {
-		const user = localStorage.getItem("authUser");
-		if (user) {
-			try {
-				setAuthUser(JSON.parse(user));
-			} catch (e) {
-				console.error("Error parsing JSON, clearing local storage");
-				localStorage.clear();
-			}
-		}
-	}, []);
+	// useEffect(() => {
+	// 	const user = localStorage.getItem("authUser");
+	// 	if (user) {
+	// 		try {
+	// 			setAuthUser(JSON.parse(user));
+	// 		} catch (e) {
+	// 			console.error("Error parsing JSON, clearing local storage");
+	// 			localStorage.clear();
+	// 		}
+	// 	}
+	// }, []);
 
 	useEffect(() => {
 		//set the dark mode class on the root element and update the local storage
@@ -79,11 +77,10 @@ function App() {
 							<SignIn
 								darkMode={darkMode}
 								setDarkMode={setDarkMode}
-								authUser={authUser}
 							/>
 						}
 					/>
-					<Route
+					{/* <Route
 						path="/dashboard"
 						element={
 							<Dashboard
@@ -91,7 +88,7 @@ function App() {
 								setDarkMode={setDarkMode}
 							/>
 						}
-					/>
+					/> */}
 					<Route
 						path="/lists/create/*"
 						element={
@@ -137,7 +134,7 @@ function App() {
 							/>
 						}
 					/>
-                    <Route
+					<Route
 						path="/profile/*"
 						element={
 							<Profile

@@ -8,6 +8,7 @@ import {
 	FaEdit,
 	FaEllipsisH,
 	FaTrash,
+	FaSave,
 	FaCloudDownloadAlt,
 } from "react-icons/fa";
 import { MdQuiz } from "react-icons/md";
@@ -20,18 +21,20 @@ import {
 	collection,
 	deleteDoc,
 	doc,
+	updateDoc,
 } from "firebase/firestore";
 import Spinner from "../../components/Spinner";
 import { nanoid } from "nanoid";
 
 interface Term {
-    definition: string;
-    word: string;
+	definition: string;
+	word: string;
 }
 
 interface ListDataItem {
 	authorUsername: string;
 	listId: string;
+	listCode: string;
 	listContent: Term[];
 	listTitle: string;
 	listDescription: string;
@@ -58,8 +61,10 @@ const Lists: React.FC<Props> = ({ darkMode, setDarkMode }): JSX.Element => {
 			const authUser = JSON.parse(
 				localStorage.getItem("authUser") ?? "{}"
 			);
-			if (!authUser.password || !authUser.email || !authUser.username)
+			if (!authUser.password || !authUser.email || !authUser.username) {
 				navigate("/signin");
+				return;
+			}
 			const querySnapshot = await getDocs(
 				query(
 					collection(db, "lists"),
@@ -81,18 +86,18 @@ const Lists: React.FC<Props> = ({ darkMode, setDarkMode }): JSX.Element => {
 			).docs
 				.map(doc => doc.data().savedLists)
 				.flat();
-			for (const doc of userSavedLists) {
-				const docQuery = await getDocs(
+			const savedListData = [];
+			for (const listId of userSavedLists) {
+				const listQuery = await getDocs(
 					query(
 						collection(db, "lists"),
-						where("listId", "==", doc.listId)
+						where("listId", "==", listId)
 					)
 				);
-				setSavedUserListData(prev => [
-					...prev,
-					docQuery.docs[0].data() as ListDataItem,
-				]);
+				if (listQuery.docs.length === 0) continue;
+				savedListData.push(listQuery.docs[0].data());
 			}
+			setSavedUserListData(savedListData as ListDataItem[]);
 			const allLists = (await getDocs(collection(db, "lists"))).docs
 				.map(doc => doc.data())
 				.filter(list => list.authorUsername !== authUser.username)
@@ -124,17 +129,99 @@ const Lists: React.FC<Props> = ({ darkMode, setDarkMode }): JSX.Element => {
 				)
 		);
 	};
+	const [importListModalOpen, setImportListModalOpen] = useState(false);
+	const [codeInputValue, setCodeInputValue] = useState("");
+	const codeInputRef = useRef<HTMLInputElement>(null);
+	const updateImportedLists = async () => {
+		const authUser = JSON.parse(localStorage.getItem("authUser") ?? "{}");
+		if (!authUser.password || !authUser.email || !authUser.username) {
+			navigate("/signin");
+			return;
+		}
+		const userQuery = await getDocs(
+			query(
+				collection(db, "user-data"),
+				where("username", "==", authUser.username),
+				where("email", "==", authUser.email)
+			)
+		);
+		const listQuery = (
+			await getDocs(
+				query(
+					collection(db, "lists"),
+					where("listCode", "==", codeInputValue)
+				)
+			)
+		).docs;
+		if (listQuery.length === 0) {
+			alert("Invalid code");
+			return;
+		}
+		const correspondingList = listQuery[0].data();
+		if (
+			savedUserListData
+				.map(l => l.listId)
+				.includes(correspondingList.listId)
+		) {
+			alert("You already have this list saved!");
+			return;
+		}
+        if (
+            userListData
+                .map(l => l.listId)
+                .includes(correspondingList.listId)
+        ) {
+            alert("You own this list!");
+            return;
+        }
+		await updateDoc(doc(db, "user-data", userQuery.docs[0].id), {
+			email: authUser.email,
+			password: authUser.password,
+			savedLists: [...savedUserListData, correspondingList.listId],
+			username: authUser.username,
+		});
+		setSavedUserListData(prev => [
+			...prev,
+			correspondingList as ListDataItem,
+		]);
+		setImportListModalOpen(false);
+		setCodeInputValue("");
+		if (codeInputRef.current) codeInputRef.current.value = "";
+	};
 	return (
 		<>
 			<Layout darkMode={darkMode} setDarkMode={setDarkMode} sideNav>
-				{/* <Modal
+				<Modal
 					title={"Import List"}
-					open={openModal}
-					setOpen={setOpenModal}
+					open={importListModalOpen}
+					setOpen={setImportListModalOpen}
+					dimensions={{ width: "20%" }}
 					darkMode={darkMode}
 				>
-                    
-                </Modal> */}
+					<div className="flex flex-col items-center justify-center p-5 gap-5">
+						<label
+							htmlFor="code-input"
+							className="text-black dark:text-white text-center"
+						>
+							Enter List Code
+						</label>
+						<input
+							id="code-input"
+							onChange={e =>
+								setCodeInputValue(e.target.value.toUpperCase())
+							}
+							ref={codeInputRef}
+							className="input-form-create text-lg uppercase font-bold"
+						/>
+						<div
+							className="btn p-3"
+							role="button"
+							onClick={updateImportedLists}
+						>
+							<p className="btn-text">Import</p>
+						</div>
+					</div>
+				</Modal>
 				<div className="min-h-screen">
 					{!loading ? (
 						<>
@@ -168,16 +255,18 @@ const Lists: React.FC<Props> = ({ darkMode, setDarkMode }): JSX.Element => {
 										(
 											{
 												listId,
+												listCode,
 												listTitle,
 												authorUsername,
 												listDescription,
-                                                listContent
+												listContent,
 											},
 											i
 										) => (
 											<ListCard
 												listId={listId}
-                                                listContent={listContent}
+												listCode={listCode}
+												listContent={listContent}
 												userListData={userListData}
 												setUserListData={
 													setUserListData
@@ -186,7 +275,7 @@ const Lists: React.FC<Props> = ({ darkMode, setDarkMode }): JSX.Element => {
 												author={authorUsername}
 												description={listDescription}
 												darkMode={darkMode}
-                                                authorOptions
+												authorOptions
 												key={i}
 											/>
 										)
@@ -199,9 +288,9 @@ const Lists: React.FC<Props> = ({ darkMode, setDarkMode }): JSX.Element => {
 										Saved / Imported Lists
 									</h1>
 								</div>
-								{/* <div
+								<div
 									className="w-40 h-10 btn"
-									onClick={() => setOpenModal(true)}
+									onClick={() => setImportListModalOpen(true)}
 								>
 									<span>
 										<FaCloudDownloadAlt
@@ -213,22 +302,24 @@ const Lists: React.FC<Props> = ({ darkMode, setDarkMode }): JSX.Element => {
 									<p className="font-bold text-xl text-white">
 										Import List
 									</p>
-								</div> */}
+								</div>
 								<div className="flex flex-wrap items-center justify-evenly sm:flex-row md:basis-2">
 									{savedUserListData.map(
 										(
 											{
 												listId,
+												listCode,
 												listTitle,
 												authorUsername,
 												listDescription,
-                                                listContent
+												listContent,
 											},
 											i
 										) => (
 											<ListCard
 												listId={listId}
-                                                listContent={listContent}
+												listCode={listCode}
+												listContent={listContent}
 												userListData={userListData}
 												setUserListData={
 													setUserListData
@@ -256,11 +347,12 @@ const Lists: React.FC<Props> = ({ darkMode, setDarkMode }): JSX.Element => {
 									<input
 										id="list-search"
 										className="input-form-create w-10"
+										placeholder="Search Lists"
 										ref={searchInputRef}
 										onChange={e =>
 											handleInputChange(e.target.value)
 										}
-									></input>
+									/>
 								</div>
 								<div className="flex flex-wrap items-center justify-evenly sm:flex-row md:basis-2">
 									{((searchInputRef.current?.value.length ??
@@ -270,7 +362,8 @@ const Lists: React.FC<Props> = ({ darkMode, setDarkMode }): JSX.Element => {
 									).map(d => (
 										<ListCard
 											listId={d.listId}
-                                            listContent={d.listContent}
+											listCode={d.listCode}
+											listContent={d.listContent}
 											userListData={userListData}
 											setUserListData={setUserListData}
 											title={d.listTitle}
@@ -297,30 +390,35 @@ export default Lists;
 
 interface LCProps {
 	listId?: string;
-    listContent: Term[];
+	listCode: string;
+	listContent: Term[];
 	userListData?: ListDataItem[];
 	setUserListData: React.Dispatch<React.SetStateAction<ListDataItem[]>>;
 	title?: string;
 	author?: string;
 	description?: string;
-    authorOptions?: boolean;
+	authorOptions?: boolean;
 	darkMode: boolean;
 }
 
 const ListCard: React.FC<LCProps> = ({
 	listId = "123",
-    listContent = [],
+	listCode,
+	listContent = [],
 	userListData = [],
 	setUserListData,
 	title = "Title",
 	author = "Author",
 	description = "Description",
-    authorOptions = false,
+	authorOptions = false,
 	darkMode,
 }): JSX.Element => {
-	const [modalProps, setModalProps] = useState<React.ReactNode | null>(null);
 	return (
-		<div className="flex flex-col w-full max-w-xs p-4 m-5 bg-white rounded-lg shadow-md max-h-96 dark:bg-gray-800 gap-y-2">
+		<div
+			className={`flex flex-col w-full max-w-xs p-4 m-5 bg-white rounded-lg shadow-lg max-h-96 dark:bg-gray-800 gap-y-2 ring-2 ${
+				author === "Super Speller" ? "ring-blue-500" : "ring-gray-300"
+			}`}
+		>
 			<title className="text-2xl font-bold dark:text-white line-clamp-1 d">
 				{title}
 			</title>
@@ -335,7 +433,8 @@ const ListCard: React.FC<LCProps> = ({
 				listInfo
 				darkMode={darkMode}
 				listId={listId}
-                listContent={listContent}
+				listCode={listCode}
+				listContent={listContent}
 				userListData={userListData}
 				setUserListData={setUserListData}
 			/>
@@ -345,7 +444,8 @@ const ListCard: React.FC<LCProps> = ({
 
 interface OptionsProps {
 	listId: string;
-    listContent: Term;
+	listCode: string;
+	listContent: Term[];
 	userListData: ListDataItem[];
 	setUserListData: React.Dispatch<React.SetStateAction<ListDataItem[]>>;
 	editable: boolean;
@@ -357,7 +457,8 @@ interface OptionsProps {
 
 const Options: React.FC<OptionsProps> = ({
 	listId,
-    listContent,
+	listCode,
+	listContent,
 	userListData,
 	setUserListData,
 	editable,
@@ -400,6 +501,9 @@ const Options: React.FC<OptionsProps> = ({
 		}
 	}, [open]);
 	const [content, setContent] = useState<React.ReactNode>(<></>);
+	const [modalDimensions, setModalDimensions] = useState<{
+		[key: string]: string;
+	}>({});
 	const [title, setTitle] = useState<string>("");
 	return (
 		<>
@@ -407,18 +511,10 @@ const Options: React.FC<OptionsProps> = ({
 				open={open}
 				setOpen={setOpen}
 				darkMode={darkMode}
-				dimensions={{ width: "60%" }}
-				title="Terms"
+				dimensions={modalDimensions}
+				title={title}
 			>
-				<div className="w-auto max-h-96 overflow-y-scroll p-3">
-					{listContent.map((term, i, a) => (
-						<TermCard
-							term={term}
-                            lastTerm={i === a.length - 1}
-							key={nanoid()}
-						/>
-					))}
-				</div>
+				{content}
 			</Modal>
 			<div className="flex justify-between">
 				<div className="flex gap-3">
@@ -437,14 +533,15 @@ const Options: React.FC<OptionsProps> = ({
 							title="share"
 							onClick={() => {
 								setTitle("Share");
+								setModalDimensions({ width: "20%"});
 								setContent(
-									<div className="flex flex-col items-center justify-between md:max-w-sm md:h-64 lg:max-w-lg lg:h-96 aspect-square">
-										<h2 className="text-2xl">Share</h2>
-										<div className="flex items-center justify-center h-64 w-64 bg-gray-300">
-											qr code
-										</div>
-										<br />
-										<p>link</p>
+									<div className="flex items-center justify-center flex-col d">
+										<h2 className="text-xl">
+											Share this list using this code:
+										</h2>
+										<h2 className="m-2 font-bold text-3xl text-blue-400">
+											{listCode}
+										</h2>
 									</div>
 								);
 								setOpen(true);
@@ -455,7 +552,22 @@ const Options: React.FC<OptionsProps> = ({
 						<OptionButton
 							icon={<FaEllipsisH color={"white"} />}
 							title="terms"
-							onClick={() => setOpen(true)}
+							onClick={() => {
+								setTitle("Terms");
+								setContent(
+									<div className="w-auto max-h-96 overflow-y-scroll p-3">
+										{listContent.map((term, i, a) => (
+											<TermCard
+												term={term}
+												lastTerm={i === a.length - 1}
+												key={nanoid()}
+											/>
+										))}
+									</div>
+								);
+								setModalDimensions({ width: "60%" });
+								setOpen(true);
+							}}
 						/>
 					)}
 					{deletable && (
@@ -464,6 +576,7 @@ const Options: React.FC<OptionsProps> = ({
 							title="delete list"
 							onClick={() => {
 								setTitle("Delete");
+								setModalDimensions({ width: "40%" });
 								setContent(
 									<div className="flex flex-col items-center justify-center w-full p-3 mb-5 gap-5">
 										<p className="text-center text-xl font-semibold text-gray-800 dark:text-gray-100">
@@ -513,19 +626,19 @@ const Options: React.FC<OptionsProps> = ({
 };
 
 const TermCard: React.FC<{
-    term: Term;
-    lastTerm: boolean; 
+	term: Term;
+	lastTerm: boolean;
 }> = ({ term, lastTerm }): JSX.Element => {
-    return (
-        <div className={`p-2 min-h-14 flex items-center gap-5 dark:bg-gray-700 rounded-lg cursor-pointer dark:border-none border ${
-                            lastTerm ? 'mb-8' : 'mb-2'
-                        }`}>
-            <h2 className="d font-semibold w-18">
-                {term.word}
-            </h2>
-            <div>
-                <p className="d">{term.definition}</p>
-            </div>
-        </div>
-    )
-}
+	return (
+		<div
+			className={`p-2 min-h-14 flex items-center gap-5 dark:bg-gray-700 rounded-lg cursor-pointer dark:border-none border ${
+				lastTerm ? "mb-8" : "mb-2"
+			}`}
+		>
+			<h2 className="d font-semibold w-18">{term.word}</h2>
+			<div>
+				<p className="d">{term.definition}</p>
+			</div>
+		</div>
+	);
+};

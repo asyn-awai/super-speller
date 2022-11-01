@@ -57,15 +57,13 @@ const Quiz: React.FC<Props> = ({ darkMode, setDarkMode }) => {
 	useEffect(() => {
 		const listId = location.pathname.split("/").pop();
 		const authUser = JSON.parse(localStorage.getItem("authUser") ?? "{}");
-		if (!authUser.password || !authUser.email || !authUser.username)
+		if (!authUser.password || !authUser.email || !authUser.username) {
 			navigate("/signin");
+			return;
+		}
 		(async () => {
 			const listQuery = await getDocs(
-				query(
-					collection(db, "lists"),
-					where("listId", "==", listId),
-					where("authorUsername", "==", authUser.username)
-				)
+				query(collection(db, "lists"), where("listId", "==", listId))
 			);
 			if (listQuery.size === 0) {
 				navigate("/lists");
@@ -230,6 +228,7 @@ const InputSection: React.FC<{
 				<input
 					ref={inputRef}
 					onChange={e => setInputValue(e.target.value)}
+                    spellCheck="false"
 					className="w-full bg-gray-50 border placeholder:text-3xl border-gray-300 text-gray-900 text-5xl font-bold rounded-lg focus:ring-blue-500 focus:border-blue-500 px-5 py-4 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 transition-all"
 				/>
 			</form>

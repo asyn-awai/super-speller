@@ -8,23 +8,12 @@ import Layout from "../components/Layout";
 import Modal from "../components/Modal";
 import Spinner from "../components/Spinner";
 
-interface User {
-	username: string;
-	email: string;
-	password: string;
-}
-
 interface Props {
 	darkMode: boolean;
 	setDarkMode: React.Dispatch<React.SetStateAction<boolean>>;
-	authUser: User | null | undefined;
 }
 
-const SignIn: React.FC<Props> = ({
-	darkMode,
-	setDarkMode,
-	authUser,
-}): JSX.Element => {
+const SignIn: React.FC<Props> = ({ darkMode, setDarkMode }): JSX.Element => {
 	const navigate = useNavigate();
 
 	/**
@@ -102,7 +91,7 @@ const SignIn: React.FC<Props> = ({
 				email: authUser.email,
 				score: 0,
 			});
-			navigate("/dashboard");
+			navigate("/lists");
 		} catch (error) {
 			alert(error);
 		}
@@ -110,9 +99,12 @@ const SignIn: React.FC<Props> = ({
 
 	useEffect(() => {
 		(async () => {
-			if (authUser) {
-				//use firebase to check if authUser username and password match
-				//if they do, navigate to dashboard
+			const authUser = JSON.parse(
+				localStorage.getItem("authUser") ?? "{}"
+			);
+			if (!authUser.password || !authUser.email || !authUser.username) {
+				setLoadPage(true);
+			} else {
 				const matches = await getDocs(
 					query(
 						collection(db, "user-data"),
@@ -122,13 +114,11 @@ const SignIn: React.FC<Props> = ({
 					)
 				);
 				if (matches.size > 0) {
-					navigate("/dashboard");
+					navigate("/lists");
 				} else {
 					localStorage.removeItem("authUser");
 					setLoadPage(true);
 				}
-			} else {
-				setLoadPage(true);
 			}
 		})();
 	}, []);
@@ -253,7 +243,7 @@ async function validateLogin(
 			password,
 		});
 		alert("success");
-		navigate("/dashboard");
+		navigate("/lists");
 	} catch (error) {
 		alert(error);
 	}

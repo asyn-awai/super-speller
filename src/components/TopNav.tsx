@@ -55,7 +55,7 @@ const TopNav: React.FC<Props> = ({
 						className="w-24 h-10 mr-10 transition-colors bg-blue-500 sm:w-32 rounded-2xl hover:bg-blue-600"
 						onClick={() => {
 							localStorage.getItem("authUser")
-								? navigate("/dashboard")
+								? navigate("/lists")
 								: navigate("/signin");
 						}}
 					>

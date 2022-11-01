@@ -16,6 +16,7 @@ import {
 	where,
 } from "firebase/firestore";
 import { useLocation, useNavigate } from "react-router-dom";
+import Spinner from "../../components/Spinner";
 
 interface Word {
 	word: string;
@@ -37,6 +38,7 @@ interface Props {
 const Create: React.FC<Props> = ({ darkMode, setDarkMode }): JSX.Element => {
 	const navigate = useNavigate();
 	const location = useLocation();
+	const [loading, setLoading] = useState(true);
 	const [isEditing, setIsEditing] = useState<boolean>(false);
 	const [wordsList, setWordsList] = useState<Word[]>([]);
 	const [options, setOptions] = useState<{
@@ -49,7 +51,6 @@ const Create: React.FC<Props> = ({ darkMode, setDarkMode }): JSX.Element => {
 	const titleRef = useRef<HTMLInputElement>(null);
 	const descriptionRef = useRef<HTMLInputElement>(null);
 	useEffect(() => {
-		//if user is editing a list
 		(async () => {
 			const authUser = JSON.parse(
 				localStorage.getItem("authUser") ?? "{}"
@@ -57,7 +58,10 @@ const Create: React.FC<Props> = ({ darkMode, setDarkMode }): JSX.Element => {
 			if (!authUser.password || !authUser.email || !authUser.username)
 				navigate("/signin");
 			const listId = location.pathname.split("/").pop();
-			if (listId === "create") return;
+			if (listId === "create") {
+				setLoading(false);
+				return;
+			}
 			setIsEditing(true);
 			const listData = await getDocs(
 				query(
@@ -76,12 +80,24 @@ const Create: React.FC<Props> = ({ darkMode, setDarkMode }): JSX.Element => {
 			setWordsList(listData.docs[0].data().listContent);
 			setListTitle(listData.docs[0].data().listTitle);
 			setListDescription(listData.docs[0].data().listDescription);
-			titleRef.current!.value = listData.docs[0].data().listTitle;
-			descriptionRef.current!.value =
+			if (!titleRef.current || !descriptionRef.current) {
+				setLoading(false);
+				return;
+			}
+			titleRef.current.value = listData.docs[0].data().listTitle;
+			descriptionRef.current.value =
 				listData.docs[0].data().listDescription;
+			setLoading(false);
 		})();
 	}, []);
 	const publishList = async () => {
+		const generateCode = () => {
+			const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+			return Array.from(
+				{ length: 6 },
+				() => chars[Math.floor(Math.random() * chars.length)]
+			).join("");
+		};
 		if (
 			wordsList.length === 0 ||
 			listTitle === "" ||
@@ -97,6 +113,7 @@ const Create: React.FC<Props> = ({ darkMode, setDarkMode }): JSX.Element => {
 					authorUsername: author.username,
 					authorEmail: author.email,
 					listId: nanoid(),
+					listCode: generateCode(),
 					listTitle,
 					listDescription,
 					listContent: wordsList,
@@ -124,30 +141,30 @@ const Create: React.FC<Props> = ({ darkMode, setDarkMode }): JSX.Element => {
 	};
 	return (
 		<Layout darkMode={darkMode} setDarkMode={setDarkMode} sideNav>
-			{/* <br /> */}
 			<div className="min-h-screen">
-				<div className="flex flex-col h-auto gap-5 mx-2">
-					<div className="flex items-center justify-start w-full h-36">
-						<h1 className="text-2xl font-bold">Create</h1>
-					</div>
-					<div className="flex justify-center">
-						<div className="w-3/4">
-							<label
-								htmlFor="options"
-								className="block mb-2 text-sm font-medium text-gray-900 dark:text-gray-300"
-							>
-								Options
-							</label>
-							<ul
-								id="options"
-								className="flex gap-5 items-center w-auto text-sm font-medium text-gray-900 dark:text-white"
-							>
-								{/*["Hide word info"].map(title => (
+				{!loading ? (
+					<div className="flex flex-col h-auto gap-5 mx-2">
+						<div className="flex items-center justify-start w-full h-36">
+							<h1 className="text-2xl font-bold">Create</h1>
+						</div>
+						<div className="flex justify-center">
+							<div className="w-3/4">
+								<label
+									htmlFor="options"
+									className="block mb-2 text-sm font-medium text-gray-900 dark:text-gray-300"
+								>
+									Options
+								</label>
+								<ul
+									id="options"
+									className="flex gap-5 items-center w-auto text-sm font-medium text-gray-900 dark:text-white"
+								>
+									{/*["Hide word info"].map(title => (
 									<Checkbox title={title} key={nanoid()} />
 								))*/}
-								<div
-									role="button"
-									className={`text-sm h-10 w-40 rounded-lg transition-colors flex items-center justify-center select-none
+									<div
+										role="button"
+										className={`text-sm h-10 w-40 rounded-lg transition-colors flex items-center justify-center select-none
                                             ${
 												wordsList.length === 0 ||
 												listTitle === "" ||
@@ -155,75 +172,80 @@ const Create: React.FC<Props> = ({ darkMode, setDarkMode }): JSX.Element => {
 													? "bg-gray-500 cursor-not-allowed"
 													: "bg-blue-500 hover:bg-blue-600"
 											}`}
-									onClick={publishList}
-								>
-									<span className="mr-2">
-										<FaCloudUploadAlt
-											size={15}
-											color="white"
-										/>
-									</span>
-									<p className="md:block hidden text-white font-semibold">
-										Publish
-									</p>
-								</div>
-							</ul>
-						</div>
-					</div>
-					<div className="flex flex-col gap-5 items-center justify-center">
-						<div className="flex gap-5 w-3/4">
-							<div className="w-1/2">
-								<label
-									htmlFor="title"
-									className="block mb-2 text-sm font-medium text-gray-900 dark:text-gray-300"
-								>
-									Title
-								</label>
-								<input
-									id="title"
-									ref={titleRef}
-									className="input-form-create"
-									placeholder="Title"
-									onChange={e => setListTitle(e.target.value)}
-								/>
-							</div>
-							<div className="w-1/2">
-								<label
-									htmlFor="description"
-									className="block mb-2 text-sm font-medium text-gray-900 dark:text-gray-300"
-								>
-									Description
-								</label>
-								<input
-									id="description"
-									ref={descriptionRef}
-									className="input-form-create"
-									placeholder="Description"
-									onChange={e =>
-										setListDescription(e.target.value)
-									}
-								/>
+										onClick={publishList}
+									>
+										<span className="mr-2">
+											<FaCloudUploadAlt
+												size={15}
+												color="white"
+											/>
+										</span>
+										<p className="md:block hidden text-white font-semibold">
+											Publish
+										</p>
+									</div>
+								</ul>
 							</div>
 						</div>
-						<div className="w-3/4">
-							{wordsList.map(({ word, definition }) => {
-								return (
-									<WordCard
-										word={word}
-										definition={definition}
-										setWordsList={setWordsList}
-										key={nanoid()}
+						<div className="flex flex-col gap-5 items-center justify-center">
+							<div className="flex gap-5 w-3/4">
+								<div className="w-1/2">
+									<label
+										htmlFor="title"
+										className="block mb-2 text-sm font-medium text-gray-900 dark:text-gray-300"
+									>
+										Title
+									</label>
+									<input
+										id="title"
+										ref={titleRef}
+										className="input-form-create"
+										placeholder="Title"
+										onChange={e =>
+											setListTitle(e.target.value)
+										}
 									/>
-								);
-							})}
-							<AddWordCard
-								darkMode={darkMode}
-								wordsList={wordsList}
-								setWordsList={setWordsList}
-							/>
+								</div>
+								<div className="w-1/2">
+									<label
+										htmlFor="description"
+										className="block mb-2 text-sm font-medium text-gray-900 dark:text-gray-300"
+									>
+										Description
+									</label>
+									<input
+										id="description"
+										ref={descriptionRef}
+										className="input-form-create"
+										placeholder="Description"
+										onChange={e =>
+											setListDescription(e.target.value)
+										}
+									/>
+								</div>
+							</div>
+							<div className="w-3/4">
+								{wordsList.map(({ word, definition }) => {
+									return (
+										<WordCard
+											word={word}
+											definition={definition}
+											setWordsList={setWordsList}
+											key={nanoid()}
+										/>
+									);
+								})}
+								<AddWordCard
+									darkMode={darkMode}
+									wordsList={wordsList}
+									setWordsList={setWordsList}
+								/>
+							</div>
 						</div>
 					</div>
-				</div>
+				) : (
+					<Spinner />
+				)}
 			</div>
 		</Layout>
 	);
@@ -330,7 +352,7 @@ const AddWordCard: React.FC<{
 				}
 			}
 		}
-		return examples.sort(() => Math.random() - 0.5).flat();
+		return examples.sort(() => Math.random() - 0.5)[0];
 	};
 
 	const handleGetDef = async () => {

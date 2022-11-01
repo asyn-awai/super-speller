@@ -40,14 +40,14 @@ const Layout: React.FC<Props> = ({
 			<div className="h-auto sm:h-full w-full d">
 				{sideNav && (
 					<>
-						<div
+						{/* <div
 							className="fixed bottom-6 left-6 md:hidden block"
 							onClick={() => setSideNavBtnOpen(prev => !prev)}
 						>
 							<div className="w-16 h-16 rounded-full bg-blue-500 flex items-center justify-center cursor-pointer">
 								<p>image</p>
 							</div>
-						</div>
+						</div> */}
 						<div className="fixed z-50 hidden w-24 transition-all duration-300 ease-in-out group hover:md:w-48 md:block">
 							<SideNav
 								darkMode={darkMode}

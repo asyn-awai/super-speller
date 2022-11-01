@@ -26,33 +26,32 @@ const SideNav: React.FC<Props> = ({ darkMode, setDarkMode }): JSX.Element => {
 				<h1 className="w-full pt-4 text-2xl font-bold text-center transition-transform duration-300 origin-left scale-0 cursor-pointer whitespace-nowrap group-hover:scale-100">
 					Super Speller
 				</h1>
+				<h1 className="w-full pt-4 text-2xl font-bold text-center transition-transform duration-300 origin-top cursor-pointer whitespace-nowrap group-hover:scale-0 scale-100">
+					SS
+				</h1>
 			</div>
 			<br />
 			<div className="flex flex-col justify-between h-[85%] overflow-x-hidden overflow-y-scroll scrollbar-hide">
 				<div>
 					{[
-						"Dashboard",
+						// "Dashboard",
 						"Lists",
 						"Leaderboard",
 						"Mastery",
 						// "Test",
 						// "Test",
 					].map((item, i) => (
-                        // nano id breaks animation?
-						<NavItem
-							item={item}
-							darkMode={darkMode}
-							key={i}
-						/>
+						// nano id breaks animation?
+						<NavItem item={item} darkMode={darkMode} key={i} />
 					))}
 				</div>
-				<div>
+				<div className="mb-10">
 					<NavItem
 						item="Theme"
 						darkMode={darkMode}
 						setDarkMode={setDarkMode}
 					/>
-					<NavItem item="Profile" darkMode={darkMode} />
+					{/* <NavItem item="Profile" darkMode={darkMode} /> */}
 					<NavItem item="Logout" darkMode={darkMode} />
 				</div>
 			</div>
@@ -67,7 +66,7 @@ const NavItem: React.FC<{
 	darkMode: boolean;
 	setDarkMode?: React.Dispatch<React.SetStateAction<boolean>>;
 }> = ({ item, darkMode, setDarkMode = null }): JSX.Element => {
-    const navigate = useNavigate();
+	const navigate = useNavigate();
 	const sameLocation =
 		window.location.pathname.substring(1) === item.toLowerCase();
 	const itemInfo = getNavItem(item, darkMode);
@@ -111,11 +110,11 @@ const getNavItem = (
 				path: "/",
 				onClick: () => {},
 			},
-			dashboard: {
-				image: <FaChartPie className="mx-5" size={25} color="white" />,
-				path: "/dashboard",
-				onClick: () => {},
-			},
+			// dashboard: {
+			// 	image: <FaChartPie className="mx-5" size={25} color="white" />,
+			// 	path: "/dashboard",
+			// 	onClick: () => {},
+			// },
 			lists: {
 				image: <FaThList className="mx-5" size={25} color="white" />,
 				path: "/lists",
@@ -133,13 +132,13 @@ const getNavItem = (
 				path: "/mastery",
 				onClick: () => {},
 			},
-			profile: {
-				image: (
-					<FaUserCircle className="mx-5" size={25} color="white" />
-				),
-				path: "/profile",
-				onClick: () => {},
-			},
+			// profile: {
+			// 	image: (
+			// 		<FaUserCircle className="mx-5" size={25} color="white" />
+			// 	),
+			// 	path: "/profile",
+			// 	onClick: () => {},
+			// },
 			logout: {
 				image: (
 					<FaSignOutAlt
