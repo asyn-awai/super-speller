@@ -24,13 +24,15 @@ import {
 import Spinner from "../../components/Spinner";
 import { nanoid } from "nanoid";
 
+interface Term {
+    definition: string;
+    word: string;
+}
+
 interface ListDataItem {
 	authorUsername: string;
 	listId: string;
-	listContent: {
-		definition: string;
-		word: string;
-	}[];
+	listContent: Term[];
 	listTitle: string;
 	listDescription: string;
 }
@@ -169,11 +171,13 @@ const Lists: React.FC<Props> = ({ darkMode, setDarkMode }): JSX.Element => {
 												listTitle,
 												authorUsername,
 												listDescription,
+                                                listContent
 											},
 											i
 										) => (
 											<ListCard
 												listId={listId}
+                                                listContent={listContent}
 												userListData={userListData}
 												setUserListData={
 													setUserListData
@@ -182,6 +186,7 @@ const Lists: React.FC<Props> = ({ darkMode, setDarkMode }): JSX.Element => {
 												author={authorUsername}
 												description={listDescription}
 												darkMode={darkMode}
+                                                authorOptions
 												key={i}
 											/>
 										)
@@ -210,18 +215,32 @@ const Lists: React.FC<Props> = ({ darkMode, setDarkMode }): JSX.Element => {
 									</p>
 								</div> */}
 								<div className="flex flex-wrap items-center justify-evenly sm:flex-row md:basis-2">
-									{savedUserListData.map(d => (
-										<ListCard
-											listId={d.listId}
-											userListData={userListData}
-											setUserListData={setUserListData}
-											title={d.listTitle}
-											author={d.authorUsername}
-											description={d.listDescription}
-											darkMode={darkMode}
-											key={d.listId}
-										/>
-									))}
+									{savedUserListData.map(
+										(
+											{
+												listId,
+												listTitle,
+												authorUsername,
+												listDescription,
+                                                listContent
+											},
+											i
+										) => (
+											<ListCard
+												listId={listId}
+                                                listContent={listContent}
+												userListData={userListData}
+												setUserListData={
+													setUserListData
+												}
+												title={listTitle}
+												author={authorUsername}
+												description={listDescription}
+												darkMode={darkMode}
+												key={i}
+											/>
+										)
+									)}
 								</div>
 							</div>
 							<div className="flex flex-col h-auto gap-5 mx-2 mb-10">
@@ -251,6 +270,7 @@ const Lists: React.FC<Props> = ({ darkMode, setDarkMode }): JSX.Element => {
 									).map(d => (
 										<ListCard
 											listId={d.listId}
+                                            listContent={d.listContent}
 											userListData={userListData}
 											setUserListData={setUserListData}
 											title={d.listTitle}
@@ -277,21 +297,25 @@ export default Lists;
 
 interface LCProps {
 	listId?: string;
+    listContent: Term[];
 	userListData?: ListDataItem[];
 	setUserListData: React.Dispatch<React.SetStateAction<ListDataItem[]>>;
 	title?: string;
 	author?: string;
 	description?: string;
+    authorOptions?: boolean;
 	darkMode: boolean;
 }
 
 const ListCard: React.FC<LCProps> = ({
 	listId = "123",
+    listContent = [],
 	userListData = [],
 	setUserListData,
 	title = "Title",
 	author = "Author",
 	description = "Description",
+    authorOptions = false,
 	darkMode,
 }): JSX.Element => {
 	const [modalProps, setModalProps] = useState<React.ReactNode | null>(null);
@@ -305,12 +329,13 @@ const ListCard: React.FC<LCProps> = ({
 				{description}
 			</p>
 			<Options
-				editable
+				editable={authorOptions}
 				shareable
-				deletable
+				deletable={authorOptions}
 				listInfo
 				darkMode={darkMode}
 				listId={listId}
+                listContent={listContent}
 				userListData={userListData}
 				setUserListData={setUserListData}
 			/>
@@ -320,6 +345,7 @@ const ListCard: React.FC<LCProps> = ({
 
 interface OptionsProps {
 	listId: string;
+    listContent: Term;
 	userListData: ListDataItem[];
 	setUserListData: React.Dispatch<React.SetStateAction<ListDataItem[]>>;
 	editable: boolean;
@@ -331,6 +357,7 @@ interface OptionsProps {
 
 const Options: React.FC<OptionsProps> = ({
 	listId,
+    listContent,
 	userListData,
 	setUserListData,
 	editable,
@@ -380,10 +407,18 @@ const Options: React.FC<OptionsProps> = ({
 				open={open}
 				setOpen={setOpen}
 				darkMode={darkMode}
-				dimensions={{ width: "30%" }}
-				title={title}
+				dimensions={{ width: "60%" }}
+				title="Terms"
 			>
-				{content}
+				<div className="w-auto max-h-96 overflow-y-scroll p-3">
+					{listContent.map((term, i, a) => (
+						<TermCard
+							term={term}
+                            lastTerm={i === a.length - 1}
+							key={nanoid()}
+						/>
+					))}
+				</div>
 			</Modal>
 			<div className="flex justify-between">
 				<div className="flex gap-3">
@@ -419,7 +454,7 @@ const Options: React.FC<OptionsProps> = ({
 					{listInfo && (
 						<OptionButton
 							icon={<FaEllipsisH color={"white"} />}
-							title="more info"
+							title="terms"
 							onClick={() => setOpen(true)}
 						/>
 					)}
@@ -476,3 +511,21 @@ const Options: React.FC<OptionsProps> = ({
 		</>
 	);
 };
+
+const TermCard: React.FC<{
+    term: Term;
+    lastTerm: boolean; 
+}> = ({ term, lastTerm }): JSX.Element => {
+    return (
+        <div className={`p-2 min-h-14 flex items-center gap-5 dark:bg-gray-700 rounded-lg cursor-pointer dark:border-none border ${
+                            lastTerm ? 'mb-8' : 'mb-2'
+                        }`}>
+            <h2 className="d font-semibold w-18">
+                {term.word}
+            </h2>
+            <div>
+                <p className="d">{term.definition}</p>
+            </div>
+        </div>
+    )
+}

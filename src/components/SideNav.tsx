@@ -137,7 +137,7 @@ const getNavItem = (
 				image: (
 					<FaUserCircle className="mx-5" size={25} color="white" />
 				),
-				path: "/",
+				path: "/profile",
 				onClick: () => {},
 			},
 			logout: {

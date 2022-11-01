@@ -330,7 +330,7 @@ const AddWordCard: React.FC<{
 				}
 			}
 		}
-		return examples?.sort(() => Math.random() - 0.5)[0];
+		return examples.sort(() => Math.random() - 0.5).flat();
 	};
 
 	const handleGetDef = async () => {

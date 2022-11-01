@@ -9,6 +9,7 @@ import Create from "./pages/lists/Create";
 import Leaderboard from "./pages/Leaderboard";
 import Mastery from "./pages/Mastery";
 import Quiz from "./pages/Quiz";
+import Profile from "./pages/Profile";
 //https://blog.logrocket.com/build-crud-application-react-firebase-web-sdk-v9/#:~:text=To%20integrate%20Firebase%20into%20our,Firebase%20in%20our%20react%20app.&text=Copy%20the%20config%20to%20the,console%20to%20complete%20the%20process.
 import { collection, DocumentData, getDocs } from "firebase/firestore";
 import db from "./firebase";
@@ -131,6 +132,15 @@ function App() {
 						path="/quiz/*"
 						element={
 							<Quiz
+								darkMode={darkMode}
+								setDarkMode={setDarkMode}
+							/>
+						}
+					/>
+                    <Route
+						path="/profile/*"
+						element={
+							<Profile
 								darkMode={darkMode}
 								setDarkMode={setDarkMode}
 							/>
